@@ -1,0 +1,5 @@
+<x-app-layout>
+    @php $isEdit = !is_null($group); @endphp
+    <x-slot name="header"><div><p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">Admin</p><h2 class="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">{{ $isEdit ? 'Edit group' : 'Add group' }}</h2></div></x-slot>
+    <div class="py-8"><div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8"><form action="{{ $action }}" method="POST" class="space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">@csrf @if($method !== 'POST') @method($method) @endif <input name="name" value="{{ old('name', $group?->name) }}" placeholder="Group name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5"><button class="rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white">Save</button></form></div></div>
+</x-app-layout>
