@@ -1,0 +1,21 @@
+%% Use case diagram (flowchart) for Student Daily Portal
+```mermaid
+flowchart LR
+  subgraph Actors
+    Admin[Admin]
+    Teacher[Teacher]
+    Student[Student]
+  end
+
+  Admin -->|Manage Users| AdminPanel[Admin Panel]
+  Teacher -->|Publish Notice| Publish[Publish Notice]
+  Teacher -->|Mark Attendance| Attendance[Mark Attendance]
+  Student -->|View Notices| ViewNotices[View Notices]
+  Student -->|Send Request| SendRequest[Send Request]
+  Student -->|Message Teacher| Message[Message Teacher]
+  AdminPanel --> Database[(Database)]
+  Publish --> Database
+  Attendance --> Database
+  SendRequest --> Database
+  Message --> Database
+```

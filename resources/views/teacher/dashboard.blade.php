@@ -128,6 +128,19 @@
                             </div>
                         </div>
 
+                        <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">School Class Overview</p>
+                            <p class="mt-1 text-sm text-slate-600">{{ $schoolLabel !== '' ? $schoolLabel : 'School not assigned' }}: {{ $schoolStudentCount }} students</p>
+                            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                                @foreach($studentsByClass as $item)
+                                    <div class="rounded-xl bg-white px-3 py-2 text-center">
+                                        <p class="text-xs text-slate-500">Class {{ $item['class'] }}</p>
+                                        <p class="text-lg font-black text-slate-900">{{ $item['count'] }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
                         <div class="mt-5 space-y-3">
                             @forelse($topStudents as $student)
                                 <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">

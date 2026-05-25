@@ -1,0 +1,56 @@
+%% ER diagram for Student Daily Portal
+```mermaid
+erDiagram
+    USERS {
+        int id PK
+        string name
+        string email
+        string password
+        string role
+    }
+    STUDENTS {
+        int id PK
+        int user_id FK
+        string roll
+        int class_id
+    }
+    TEACHERS {
+        int id PK
+        int user_id FK
+        string department
+    }
+    ATTENDANCE {
+        int id PK
+        int student_id FK
+        date date
+        boolean present
+    }
+    NOTICES {
+        int id PK
+        int author_id FK
+        string title
+        text body
+        datetime created_at
+    }
+    MESSAGES {
+        int id PK
+        int sender_id FK
+        int receiver_id FK
+        text body
+        datetime sent_at
+    }
+    REQUESTS {
+        int id PK
+        int student_id FK
+        string subject
+        text body
+        string status
+    }
+
+    USERS ||--o{ STUDENTS: has
+    USERS ||--o{ TEACHERS: has
+    STUDENTS ||--o{ ATTENDANCE: "records"
+    USERS ||--o{ NOTICES: authors
+    USERS ||--o{ MESSAGES: sends
+    STUDENTS ||--o{ REQUESTS: creates
+```

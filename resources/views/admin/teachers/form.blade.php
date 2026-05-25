@@ -16,7 +16,7 @@
                 </p>
             </div>
             <div class="flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-                <span class="rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">Role: Teacher</span>
+                <span class="rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">Role control</span>
                 <span class="rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">Admin controlled</span>
                 <span class="rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">Image sync enabled</span>
             </div>
@@ -53,6 +53,17 @@
                             <div>
                                 <label class="mb-2 block text-sm font-semibold text-slate-700">Area</label>
                                 <input name="area" value="{{ old('area', $teacher?->area ?? $user?->area) }}" placeholder="Khulna Sadar" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
+                            </div>
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">Role</label>
+                                <select name="role" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                    <option value="teacher" @selected(old('role', $user?->role ?? 'teacher') === 'teacher')>Teacher</option>
+                                    <option value="teacher_admin" @selected(old('role', $user?->role ?? '') === 'teacher_admin')>Head Teacher / Teacher Admin</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-slate-700">School / College</label>
+                                <input name="school" value="{{ old('school', $user?->school ?? $teacher?->institution) }}" placeholder="School or college name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
                             </div>
                         </div>
 

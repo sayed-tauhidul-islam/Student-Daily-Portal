@@ -15,6 +15,9 @@ use App\Http\Controllers\Teacher\TeacherAttendanceController;
 use App\Http\Controllers\Teacher\TeacherNoticeController;
 use App\Http\Controllers\Teacher\TeacherProfileController;
 use App\Http\Controllers\Teacher\TeacherPostController;
+use App\Http\Controllers\TeacherAdmin\TeacherAdminDashboardController;
+use App\Http\Controllers\TeacherAdmin\TeacherAdminStudentController;
+use App\Http\Controllers\TeacherAdmin\TeacherAdminTeacherController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Student\StudentProfileController;
@@ -33,6 +36,7 @@ Route::get('/dashboard', function () {
 
     return match ($role) {
         'teacher' => redirect()->route('teacher.dashboard'),
+        'teacher_admin' => redirect()->route('teacher-admin.dashboard'),
         'admin' => redirect()->route('admin.dashboard'),
         default => redirect()->route('student.dashboard'),
     };
@@ -42,6 +46,9 @@ Route::get('/dashboard', function () {
 
 Route::get('/schools', [SchoolController::class, 'index'])
     ->name('schools.index');
+
+Route::get('/schools/{school}', [SchoolController::class, 'show'])
+    ->name('schools.show');
 
 Route::get('/teachers', [TeacherController::class, 'index'])
     ->name('teachers.index');
@@ -141,6 +148,40 @@ Route::middleware(['auth', 'teacher'])->group(function () {
         ->name('teacher.notices.update');
     Route::delete('/teacher/notices/{notice}', [TeacherNoticeController::class, 'destroy'])
         ->name('teacher.notices.destroy');
+});
+
+Route::middleware(['auth', 'teacher_admin'])->group(function () {
+    Route::get('/teacher-admin/dashboard', [TeacherAdminDashboardController::class, 'index'])
+        ->name('teacher-admin.dashboard');
+
+    Route::get('/teacher-admin/students', [TeacherAdminStudentController::class, 'index'])
+        ->name('teacher-admin.students.index');
+    Route::get('/teacher-admin/students/create', [TeacherAdminStudentController::class, 'create'])
+        ->name('teacher-admin.students.create');
+    Route::post('/teacher-admin/students', [TeacherAdminStudentController::class, 'store'])
+        ->name('teacher-admin.students.store');
+    Route::get('/teacher-admin/students/{student}/edit', [TeacherAdminStudentController::class, 'edit'])
+        ->name('teacher-admin.students.edit');
+    Route::put('/teacher-admin/students/{student}', [TeacherAdminStudentController::class, 'update'])
+        ->name('teacher-admin.students.update');
+    Route::delete('/teacher-admin/students/{student}', [TeacherAdminStudentController::class, 'destroy'])
+        ->name('teacher-admin.students.destroy');
+
+    Route::get('/teacher-admin/teachers', [TeacherAdminTeacherController::class, 'index'])
+        ->name('teacher-admin.teachers.index');
+    Route::get('/teacher-admin/teachers/create', [TeacherAdminTeacherController::class, 'create'])
+        ->name('teacher-admin.teachers.create');
+    Route::post('/teacher-admin/teachers', [TeacherAdminTeacherController::class, 'store'])
+        ->name('teacher-admin.teachers.store');
+    Route::get('/teacher-admin/teachers/{teacher}/edit', [TeacherAdminTeacherController::class, 'edit'])
+        ->name('teacher-admin.teachers.edit');
+    Route::put('/teacher-admin/teachers/{teacher}', [TeacherAdminTeacherController::class, 'update'])
+        ->name('teacher-admin.teachers.update');
+    Route::delete('/teacher-admin/teachers/{teacher}', [TeacherAdminTeacherController::class, 'destroy'])
+        ->name('teacher-admin.teachers.destroy');
+
+    Route::get('/teacher-admin/school-database', [TeacherAdminDashboardController::class, 'database'])
+        ->name('teacher-admin.database');
 });
 
 // Dev / preview routes

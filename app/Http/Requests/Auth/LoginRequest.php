@@ -12,6 +12,13 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    private const PORTAL_ROLE_MAP = [
+        'student' => ['student'],
+        'teacher' => ['teacher'],
+        'teacher-admin' => ['teacher_admin'],
+        'super-admin' => ['admin'],
+    ];
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -30,6 +37,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'portal' => ['nullable', 'in:student,teacher,teacher-admin,super-admin'],
         ];
     }
 
@@ -47,6 +55,20 @@ class LoginRequest extends FormRequest
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        $user = Auth::user();
+        $portal = (string) $this->input('portal', 'student');
+        $allowedRoles = self::PORTAL_ROLE_MAP[$portal] ?? ['student'];
+
+        if (! $user || ! in_array((string) ($user->role ?? 'student'), $allowedRoles, true)) {
+            Auth::guard('web')->logout();
+
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'This account does not match the selected panel.',
             ]);
         }
 

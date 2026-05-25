@@ -14,9 +14,15 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.login');
+        $portal = in_array($request->string('portal')->toString(), ['student', 'teacher', 'teacher-admin', 'super-admin'], true)
+            ? $request->string('portal')->toString()
+            : 'student';
+
+        return view('auth.login', [
+            'portal' => $portal,
+        ]);
     }
 
     /**

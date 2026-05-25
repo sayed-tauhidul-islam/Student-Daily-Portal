@@ -26,6 +26,7 @@ class User extends Model implements AuthenticatableContract, MustVerifyEmailCont
         'email',
         'password',
         'role',
+        'school',
         'image',
         'phone',
         'area',

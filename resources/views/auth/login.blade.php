@@ -1,14 +1,57 @@
+@php
+    $portal = $portal ?? request('portal', 'student');
+    $portalMeta = [
+        'student' => [
+            'label' => 'Student Panel',
+            'eyebrow' => 'Student access',
+            'title' => 'Sign in to your student dashboard',
+            'description' => 'Use your student credentials to access attendance, notices, and your profile tools.',
+            'button' => 'Log in as Student',
+        ],
+        'teacher-admin' => [
+            'label' => 'Teacher Admin Panel',
+            'eyebrow' => 'Head teacher access',
+            'title' => 'Sign in to your school control panel',
+            'description' => 'Head teachers can manage only their school or college students and teachers from this panel.',
+            'button' => 'Log in as Head Teacher',
+        ],
+        'teacher' => [
+            'label' => 'Teacher Panel',
+            'eyebrow' => 'Teacher access',
+            'title' => 'Sign in to your teacher workspace',
+            'description' => 'Teachers can manage teaching tools, posts, notices, attendance, and tuition requests.',
+            'button' => 'Log in as Teacher',
+        ],
+        'super-admin' => [
+            'label' => 'Super Admin Panel',
+            'eyebrow' => 'Private system access',
+            'title' => 'Sign in to the private super admin panel',
+            'description' => 'This panel is hidden from regular users and controls the whole system.',
+            'button' => 'Log in as Super Admin',
+        ],
+    ];
+    $meta = $portalMeta[$portal] ?? $portalMeta['student'];
+@endphp
+
 <x-guest-layout>
     <div class="mb-8">
-        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">Welcome back</p>
-        <h2 class="mt-2 text-3xl font-black text-slate-950">Sign in to TutorLink BD</h2>
-        <p class="mt-3 text-sm leading-6 text-slate-600">Use your email and password to access your dashboard, profile tools, and student activity.</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">{{ $meta['eyebrow'] }}</p>
+        <h2 class="mt-2 text-3xl font-black text-slate-950">{{ $meta['title'] }}</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-600">{{ $meta['description'] }}</p>
+
+        <div class="mt-6 flex flex-wrap gap-2 text-xs font-semibold" id="portal-tabs">
+            <button type="button" data-portal="student" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'student' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Student Panel</button>
+            <button type="button" data-portal="teacher-admin" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'teacher-admin' ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600' }}">Teacher Admin Panel</button>
+            <button type="button" data-portal="teacher" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'teacher' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Teacher Panel</button>
+            <button type="button" data-portal="super-admin" class="portal-btn hidden rounded-full border px-3 py-1.5 {{ $portal === 'super-admin' ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600' }}">Super Admin</button>
+        </div>
     </div>
 
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
+        <input type="hidden" name="portal" value="{{ $portal }}">
 
         <div>
             <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Email</label>
@@ -55,7 +98,7 @@
         </div>
 
         <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">
-            Log in
+            {{ $meta['button'] }}
         </button>
     </form>
 
@@ -66,18 +109,78 @@
             const eyeOpen = document.getElementById('password-eye-open');
             const eyeClosed = document.getElementById('password-eye-closed');
 
-            if (!passwordInput || !toggleButton || !eyeOpen || !eyeClosed) {
-                return;
+            if (passwordInput && toggleButton && eyeOpen && eyeClosed) {
+                toggleButton.addEventListener('click', () => {
+                    const isHidden = passwordInput.type === 'password';
+                    passwordInput.type = isHidden ? 'text' : 'password';
+                    eyeOpen.classList.toggle('hidden', !isHidden);
+                    eyeClosed.classList.toggle('hidden', isHidden);
+                    toggleButton.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+                    toggleButton.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                });
             }
 
-            toggleButton.addEventListener('click', () => {
-                const isHidden = passwordInput.type === 'password';
-                passwordInput.type = isHidden ? 'text' : 'password';
-                eyeOpen.classList.toggle('hidden', !isHidden);
-                eyeClosed.classList.toggle('hidden', isHidden);
-                toggleButton.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-                toggleButton.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
-            });
+            // Portal metadata (mirror of server-side $portalMeta)
+            const portalMeta = {
+                student: {
+                    eyebrow: 'Student access',
+                    title: 'Sign in to your student dashboard',
+                    description: 'Use your student credentials to access attendance, notices, and your profile tools.',
+                    button: 'Log in as Student'
+                },
+                'teacher-admin': {
+                    eyebrow: 'Head teacher access',
+                    title: 'Sign in to your school control panel',
+                    description: 'Head teachers can manage only their school or college students and teachers from this panel.',
+                    button: 'Log in as Head Teacher'
+                },
+                teacher: {
+                    eyebrow: 'Teacher access',
+                    title: 'Sign in to your teacher workspace',
+                    description: 'Teachers can manage teaching tools, posts, notices, attendance, and tuition requests.',
+                    button: 'Log in as Teacher'
+                },
+                'super-admin': {
+                    eyebrow: 'Private system access',
+                    title: 'Sign in to the private super admin panel',
+                    description: 'This panel is hidden from regular users and controls the whole system.',
+                    button: 'Log in as Super Admin'
+                }
+            };
+
+            const portalInput = document.querySelector('input[name="portal"]');
+            const portalBtns = document.querySelectorAll('.portal-btn');
+            const eyebrowEl = document.querySelector('p.text-xs.font-semibold.uppercase');
+            const titleEl = document.querySelector('h2.text-3xl.font-black');
+            const descEl = document.querySelector('p.mt-3.text-sm.leading-6');
+            const submitBtn = document.querySelector('form button[type="submit"]');
+
+            function setPortal(p) {
+                if (!portalMeta[p]) return;
+                if (portalInput) portalInput.value = p;
+                if (eyebrowEl) eyebrowEl.textContent = portalMeta[p].eyebrow;
+                if (titleEl) titleEl.textContent = portalMeta[p].title;
+                if (descEl) descEl.textContent = portalMeta[p].description;
+                if (submitBtn) submitBtn.textContent = portalMeta[p].button;
+
+                portalBtns.forEach(b => {
+                    const active = b.dataset.portal === p;
+                    b.classList.toggle('border-sky-500', active && (p === 'student' || p === 'teacher'));
+                    b.classList.toggle('bg-sky-50', active && (p === 'student' || p === 'teacher'));
+                    b.classList.toggle('text-sky-700', active && (p === 'student' || p === 'teacher'));
+                    b.classList.toggle('border-slate-950', active && p === 'teacher-admin');
+                    b.classList.toggle('bg-slate-950', active && p === 'teacher-admin');
+                    b.classList.toggle('text-white', active && p === 'teacher-admin');
+                    b.classList.toggle('border-slate-200', !active);
+                    b.classList.toggle('bg-white', !active);
+                    b.classList.toggle('text-slate-600', !active);
+                });
+            }
+
+            portalBtns.forEach(b => b.addEventListener('click', () => setPortal(b.dataset.portal)));
+
+            // initialize from server-provided portal value
+            setPortal('{{ $portal }}');
         })();
     </script>
 

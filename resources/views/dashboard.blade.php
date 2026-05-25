@@ -54,27 +54,31 @@
                     </div>
                 </div>
 
-                <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <div class="rounded-[1.5rem] border border-sky-200/40 bg-white/95 p-5">
+                @php
+                    $teacherMatchFilters = array_filter([
+                        'area' => $profile?->area ?? null,
+                        'subject' => $selectedSubjects[0] ?? $profile?->subject ?? null,
+                        'class' => $profile?->class ?? null,
+                        'institution' => $profile?->school ?? null,
+                    ], fn ($value) => filled($value));
+                @endphp
+
+                <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <a href="{{ route('student.profile.create') }}" class="rounded-[1.5rem] border border-sky-200/40 bg-white/95 p-5 transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-[0_18px_45px_rgba(15,23,42,0.12)]">
                         <p class="text-sm app-muted">Profile completeness</p>
                         <p class="mt-3 text-3xl font-black text-[color:var(--app-text)]">{{ $profileCompleteness ?? 0 }}%</p>
                         <p class="mt-2 text-sm text-[color:var(--app-success)]">{{ !empty($missingFields) ? 'Missing: ' . implode(', ', array_slice($missingFields, 0, 3)) : 'Fully completed' }}</p>
-                    </div>
-                    <div class="rounded-[1.5rem] border border-sky-200/40 bg-white/95 p-5">
+                    </a>
+                    <a href="{{ $schoolRecord ? route('schools.show', $schoolRecord) : route('schools.index') }}" class="rounded-[1.5rem] border border-sky-200/40 bg-white/95 p-5 transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_18px_45px_rgba(15,23,42,0.12)]">
                         <p class="text-sm app-muted">School rating</p>
                         <p class="mt-3 text-3xl font-black text-[color:var(--app-text)]">{{ $schoolRating ? number_format($schoolRating, 1) : '—' }}</p>
                         <p class="mt-2 text-sm app-primary">{{ $schoolRecord ? $schoolRecord->name : 'Select your school' }}</p>
-                    </div>
-                    <div class="rounded-[1.5rem] border border-sky-200/40 bg-white/95 p-5">
+                    </a>
+                    <a href="{{ route('teachers.index', $teacherMatchFilters) }}" class="rounded-[1.5rem] border border-sky-200/40 bg-white/95 p-5 transition hover:-translate-y-1 hover:border-cyan-300 hover:shadow-[0_18px_45px_rgba(15,23,42,0.12)]">
                         <p class="text-sm app-muted">Teacher matches</p>
                         <p class="mt-3 text-3xl font-black text-[color:var(--app-text)]">{{ $teacherMatches->count() }}</p>
                         <p class="mt-2 text-sm text-[color:var(--app-accent)]">Found for your area + subjects</p>
-                    </div>
-                    <div class="rounded-[1.5rem] border border-sky-200/40 bg-white/95 p-5">
-                        <p class="text-sm app-muted">Teachers in your institute</p>
-                        <p class="mt-3 text-3xl font-black text-[color:var(--app-text)]">{{ $teacherCount ?? 0 }}</p>
-                        <p class="mt-2 text-sm text-[color:var(--app-primary)]">Matched by your school/college</p>
-                    </div>
+                    </a>
                 </div>
             </section>
 

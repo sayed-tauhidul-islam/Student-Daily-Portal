@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\StudentRequest;
+use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\TeacherPost;
 use App\Models\Rating;
@@ -46,6 +47,24 @@ class TeacherDashboardController extends Controller
 
         $studentCount = $studentGroups->count();
         $estimatedEarnings = (int) $matchedRequests->sum(fn ($request) => (int) ($request->budget ?? 0));
+        $school = trim((string) ($profile?->institution ?? Auth::user()?->school ?? ''));
+        $schoolStudents = Student::query()->get()->filter(function (Student $student) use ($school) {
+            return $this->belongsToSchool((string) ($student->school ?? ''), $school);
+        })->values();
+
+        $studentsByClass = collect(range(1, 10))->map(function ($class) use ($schoolStudents) {
+            $count = $schoolStudents->filter(function (Student $student) use ($class) {
+                $value = strtolower(trim((string) ($student->class ?? '')));
+                return $value === (string) $class
+                    || $value === "class {$class}"
+                    || $value === "grade {$class}";
+            })->count();
+
+            return [
+                'class' => $class,
+                'count' => $count,
+            ];
+        });
 
         return view('teacher.dashboard', [
             'profile' => $profile,
@@ -58,6 +77,31 @@ class TeacherDashboardController extends Controller
             'studentCount' => $studentCount,
             'estimatedEarnings' => $estimatedEarnings,
             'topStudents' => $topStudents,
+            'schoolStudentCount' => $schoolStudents->count(),
+            'studentsByClass' => $studentsByClass,
+            'schoolLabel' => $school,
         ]);
+    }
+
+    private function belongsToSchool(string $value, string $school): bool
+    {
+        $value = $this->normalize($value);
+        $school = $this->normalize($school);
+
+        if ($value === '' || $school === '') {
+            return false;
+        }
+
+        return $value === $school || str_contains($value, $school) || str_contains($school, $value);
+    }
+
+    private function normalize(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = str_replace(['&'], ' and ', $value);
+        $value = preg_replace('/[^a-z0-9\s]/', ' ', $value) ?? $value;
+        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+
+        return trim($value);
     }
 }

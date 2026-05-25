@@ -1,3 +1,5 @@
+@props(['contentWidth' => 'max-w-md', 'showSidebar' => true])
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -39,8 +41,8 @@
                     </a>
                 </div>
 
-                <div class="mt-8 grid flex-1 items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-                    <section class="hidden rounded-[2rem] border border-slate-200/80 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:block">
+                <div class="mt-8 grid flex-1 items-center gap-8 {{ $showSidebar ? 'lg:grid-cols-[0.9fr_1.1fr]' : '' }}">
+                    <section class="hidden rounded-[2rem] border border-slate-200/80 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:block {{ $showSidebar ? '' : 'lg:hidden' }}">
                         <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">Modern student workflow</p>
                         <h1 class="mt-4 text-4xl font-black leading-tight text-slate-950">
                             Clean login, registration, and profile management in one place.
@@ -65,7 +67,7 @@
                         </div>
                     </section>
 
-                    <div class="mx-auto w-full max-w-md rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.10)] sm:p-8">
+                    <div class="mx-auto w-full {{ $contentWidth }} {{ $showSidebar ? 'rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.10)] sm:p-8' : 'rounded-none border-0 bg-transparent p-0 shadow-none' }}">
                         {{ $slot }}
                     </div>
                 </div>

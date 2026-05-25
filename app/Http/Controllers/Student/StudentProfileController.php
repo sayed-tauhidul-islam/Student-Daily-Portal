@@ -12,7 +12,6 @@ use App\Support\Lists\SubjectList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class StudentProfileController extends Controller
 {
@@ -48,28 +47,13 @@ class StudentProfileController extends Controller
 
     public function store(Request $request)
     {
-        $schoolNames = SchoolList::names()->all();
-        $subjectNames = SubjectList::allNames()->all();
-        $teacherNames = Teacher::query()
-            ->get(['name', 'institution'])
-            ->map(function ($teacher) {
-                $institution = trim((string) ($teacher->institution ?? ''));
-
-                return $institution !== ''
-                    ? ((string) $teacher->name) . ' (' . $institution . ')'
-                    : (string) $teacher->name;
-            })
-            ->unique()
-            ->values()
-            ->all();
-
-        $request->validate([
+        $data = $request->validate([
             'class' => ['required', 'string', 'max:50'],
             'group' => ['nullable', 'string', 'max:100'],
-            'school' => ['required', 'string', 'max:255', Rule::in($schoolNames)],
+            'school' => ['required', 'string', 'max:255'],
             'subjects' => ['required', 'array', 'min:1'],
-            'subjects.*' => ['required', 'string', 'max:255', Rule::in($subjectNames)],
-            'preferred_teacher' => ['nullable', 'string', 'max:255', Rule::in($teacherNames)],
+            'subjects.*' => ['required', 'string', 'max:255'],
+            'preferred_teacher' => ['nullable', 'string', 'max:255'],
             'area' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'bio' => ['nullable', 'string', 'max:2000'],
@@ -85,24 +69,28 @@ class StudentProfileController extends Controller
             }
 
             $imagePath = $request->file('image')->store('student-images', 'public');
-            if ($user) {
-                $user->image = $imagePath;
-                $user->save();
-            }
+        }
+
+        if ($user) {
+            $user->image = $imagePath;
+            $user->school = $data['school'];
+            $user->phone = $data['phone'] ?? null;
+            $user->area = $data['area'];
+            $user->save();
         }
 
         Student::updateOrCreate([
             'user_id' => Auth::id(),
         ], [
-            'class' => $request->class,
-            'group' => $request->group,
-            'school' => $request->school,
-            'subject' => implode(', ', $request->subjects),
-            'subjects' => array_values($request->subjects),
-            'preferred_teacher' => $request->preferred_teacher,
-            'area' => $request->area,
-            'phone' => $request->phone,
-            'bio' => $request->bio,
+            'class' => $data['class'],
+            'group' => $data['group'] ?? null,
+            'school' => $data['school'],
+            'subject' => implode(', ', $data['subjects']),
+            'subjects' => array_values($data['subjects']),
+            'preferred_teacher' => $data['preferred_teacher'] ?? null,
+            'area' => $data['area'],
+            'phone' => $data['phone'] ?? null,
+            'bio' => $data['bio'] ?? null,
         ]);
 
         return redirect()->route('student.dashboard')->with('success', 'Profile saved successfully!');

@@ -26,17 +26,17 @@
 
         <style>
             :root {
-                --app-bg: #f8fbff;
-                --app-surface: rgba(255, 255, 255, 0.9);
+                --app-bg: #f3f7f4;
+                --app-surface: rgba(255, 255, 255, 0.92);
                 --app-surface-solid: #ffffff;
-                --app-text: #0f172a;
-                --app-muted: #64748b;
-                --app-border: rgba(148, 163, 184, 0.25);
-                --app-primary: #2563eb;
-                --app-accent: #38bdf8;
-                --app-soft: rgba(37, 99, 235, 0.08);
-                --app-success: #16a34a;
-                --app-danger: #dc2626;
+                --app-text: #1f2937;
+                --app-muted: #6b7280;
+                --app-border: rgba(100, 116, 139, 0.22);
+                --app-primary: #0f766e;
+                --app-accent: #0ea5a4;
+                --app-soft: rgba(15, 118, 110, 0.10);
+                --app-success: #15803d;
+                --app-danger: #b91c1c;
                 --app-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
             }
 
@@ -167,12 +167,12 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased text-[color:var(--app-text)]" style="background: var(--app-bg);">
+    <body class="antialiased text-[color:var(--app-text)]" style="background: var(--app-bg); font-family: 'Manrope', sans-serif;">
         @php
             $currentUser = Auth::user();
             $isStudentRole = ($currentUser?->role ?? '') === 'student';

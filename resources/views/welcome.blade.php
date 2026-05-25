@@ -56,8 +56,14 @@
                     </p>
 
                     <div class="mt-8 flex flex-wrap gap-4">
-                        <a href="{{ route('login') }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">
-                            Login
+                        <a href="{{ route('login', ['portal' => 'student']) }}" class="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-700">
+                            Student Panel
+                        </a>
+                        <a href="{{ route('login', ['portal' => 'teacher-admin']) }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">
+                            Teacher Admin Panel
+                        </a>
+                        <a href="{{ route('login', ['portal' => 'teacher']) }}" class="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
+                            Teacher Panel
                         </a>
                         <a href="{{ route('register') }}" class="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
                             Sign Up
