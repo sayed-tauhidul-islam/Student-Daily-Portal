@@ -1,0 +1,12 @@
+flowchart LR
+    A[Visitor] --> B[Login / Register]
+    B --> C{Role Guard}
+    C -->|Student| S[Student Dashboard]
+    C -->|Teacher| T[Teacher Dashboard]
+    C -->|Head Teacher| H[Head Teacher Panel]
+    C -->|Super Admin| A1[Admin Panel]
+
+    S --> S1[Profile, Attendance, Notices, Reading Logs]
+    T --> T1[Profile, Posts, Requests, Attendance]
+    H --> H1[School Roster, Database, Student / Teacher Control]
+    A1 --> A2[Schools, Users, Subjects, Groups, Ratings]
