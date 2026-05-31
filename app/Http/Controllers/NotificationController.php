@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
@@ -10,7 +12,15 @@ class NotificationController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $notifications = $user->notifications()->latest()->get();
+        try {
+            $notifications = DatabaseNotification::query()
+                ->where('notifiable_type', get_class($user))
+                ->where('notifiable_id', (string) $user->getKey())
+                ->latest()
+                ->paginate(20);
+        } catch (\Throwable $throwable) {
+            $notifications = new LengthAwarePaginator(collect(), 0, 20);
+        }
 
         return view('notifications.index', compact('notifications'));
     }
@@ -18,9 +28,18 @@ class NotificationController extends Controller
     public function markRead(Request $request, $id)
     {
         $user = Auth::user();
-        $notification = $user->notifications()->where('id', $id)->first();
-        if ($notification) {
-            $notification->markAsRead();
+        try {
+            $notification = DatabaseNotification::query()
+                ->where('id', $id)
+                ->where('notifiable_type', get_class($user))
+                ->where('notifiable_id', (string) $user->getKey())
+                ->first();
+
+            if ($notification) {
+                $notification->markAsRead();
+            }
+        } catch (\Throwable $throwable) {
+            // No-op fallback when notification storage is unavailable in local dev.
         }
 
         return back();

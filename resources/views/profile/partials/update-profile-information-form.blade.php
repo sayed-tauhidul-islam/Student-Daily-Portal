@@ -14,10 +14,17 @@
     </form>
 
     @php
-        $avatarUrl = $user->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->image) : null;
+        $avatarUrl = $user->image_url;
+        $activePortal = request()->query('portal')
+            ?? match (session('active_guard')) {
+                'teacher' => 'teacher',
+                'teacher_admin' => 'teacher-admin',
+                'admin' => 'admin',
+                default => 'student',
+            };
     @endphp
 
-    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update', ['portal' => $activePortal]) }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
 

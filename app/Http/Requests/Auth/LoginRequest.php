@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\BlockedIdentity;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,11 +13,11 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
-    private const PORTAL_ROLE_MAP = [
-        'student' => ['student'],
-        'teacher' => ['teacher'],
-        'teacher-admin' => ['teacher_admin'],
-        'super-admin' => ['admin'],
+    private const PORTAL_ROLE_PRIORITY = [
+        'student' => ['student', 'teacher', 'teacher_admin', 'admin', 'super_admin'],
+        'teacher' => ['teacher', 'teacher_admin', 'admin', 'super_admin', 'student'],
+        'teacher-admin' => ['teacher_admin', 'admin', 'super_admin', 'teacher', 'student'],
+        'super-admin' => ['admin', 'super_admin', 'teacher_admin', 'teacher', 'student'],
     ];
 
     /**
@@ -50,29 +51,76 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $portal = $this->portal();
+        $email = (string) $this->string('email');
+        $password = (string) $this->string('password');
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        foreach ($this->rolePriorityForPortal($portal) as $role) {
+            $guard = $this->guardForRole($role);
+
+            if (! $guard) {
+                continue;
+            }
+
+            if (! Auth::guard($guard)->attempt([
+                'email' => $email,
+                'password' => $password,
+            ], $this->boolean('remember'))) {
+                continue;
+            }
+
+            Auth::shouldUse($guard);
+
+            $user = Auth::user();
+
+            if (! $user) {
+                Auth::guard($guard)->logout();
+                continue;
+            }
+
+            // Check if user's role matches one of the priority roles
+            $userRole = (string) ($user->role ?? 'student');
+            if ($userRole !== $role && ! in_array($userRole, $this->rolePriorityForPortal($portal))) {
+                Auth::guard($guard)->logout();
+                continue;
+            }
+
+            if ((string) ($user->status ?? '') === 'blocked') {
+                Auth::guard($guard)->logout();
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => 'This account is blocked by your school authority.',
+                ]);
+            }
+
+            $blockedIdentity = BlockedIdentity::query()
+                ->where('email', Str::lower((string) ($user->email ?? '')))
+                ->where('school', (string) ($user->school ?? ''))
+                ->first();
+
+            if ($blockedIdentity) {
+                Auth::guard($guard)->logout();
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => 'You are blocked from this school. Please contact the head authority.',
+                ]);
+            }
+
+            $this->attributes->set('authenticated_guard', $guard);
+            $this->attributes->set('authenticated_role', (string) ($user->role ?? $role));
+
+            RateLimiter::clear($this->throttleKey());
+
+            return;
         }
 
-        $user = Auth::user();
-        $portal = (string) $this->input('portal', 'student');
-        $allowedRoles = self::PORTAL_ROLE_MAP[$portal] ?? ['student'];
+        RateLimiter::hit($this->throttleKey());
 
-        if (! $user || ! in_array((string) ($user->role ?? 'student'), $allowedRoles, true)) {
-            Auth::guard('web')->logout();
-
-            RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => 'This account does not match the selected panel.',
-            ]);
-        }
-
-        RateLimiter::clear($this->throttleKey());
+        throw ValidationException::withMessages([
+            'email' => trans('auth.failed'),
+        ]);
     }
 
     /**
@@ -104,5 +152,32 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+    }
+
+    public function portal(): string
+    {
+        $portal = $this->string('portal')->toString();
+
+        return array_key_exists($portal, self::PORTAL_ROLE_PRIORITY) ? $portal : 'student';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function rolePriorityForPortal(string $portal): array
+    {
+        return self::PORTAL_ROLE_PRIORITY[$portal] ?? self::PORTAL_ROLE_PRIORITY['student'];
+    }
+
+    private function guardForRole(string $role): ?string
+    {
+        return match ($role) {
+            'student' => 'student',
+            'teacher' => 'teacher',
+            'teacher_admin' => 'teacher_admin',
+            'admin' => 'admin',
+            'super_admin' => 'admin',
+            default => null,
+        };
     }
 }

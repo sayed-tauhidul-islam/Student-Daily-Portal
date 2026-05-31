@@ -84,8 +84,9 @@ class TeacherProfileController extends Controller
             ]
         );
 
-        if ($currentImage && Auth::user()) {
+        if (Auth::user()) {
             Auth::user()->image = $currentImage;
+            Auth::user()->school = $request->institution;
             Auth::user()->save();
         }
 

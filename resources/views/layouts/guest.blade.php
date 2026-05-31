@@ -15,13 +15,13 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=sora:400,500,600,700,800|outfit:400,500,600,700,800&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased text-slate-900">
-        <div class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.16),_transparent_34%),linear-gradient(180deg,_#f8fbff_0%,_#eef4fb_100%)]">
+    <body class="antialiased text-slate-900" style="font-family: 'Outfit', sans-serif;">
+        <div class="min-h-screen bg-[radial-gradient(circle_at_15%_10%,_rgba(34,197,94,0.18),_transparent_30%),radial-gradient(circle_at_90%_0%,_rgba(14,165,233,0.22),_transparent_36%),linear-gradient(140deg,_#f7fbff_0%,_#eef3ff_55%,_#fdf7ff_100%)]">
             <div class="absolute inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:72px_72px]"></div>
 
             <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
@@ -42,8 +42,8 @@
                 </div>
 
                 <div class="mt-8 grid flex-1 items-center gap-8 {{ $showSidebar ? 'lg:grid-cols-[0.9fr_1.1fr]' : '' }}">
-                    <section class="hidden rounded-[2rem] border border-slate-200/80 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:block {{ $showSidebar ? '' : 'lg:hidden' }}">
-                        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">Modern student workflow</p>
+                    <section class="hidden rounded-[2rem] border border-sky-200/70 bg-gradient-to-br from-white to-sky-50 p-8 shadow-[0_20px_55px_rgba(14,116,144,0.12)] lg:block {{ $showSidebar ? '' : 'lg:hidden' }}">
+                        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">Modern student workflow</p>
                         <h1 class="mt-4 text-4xl font-black leading-tight text-slate-950">
                             Clean login, registration, and profile management in one place.
                         </h1>
@@ -52,22 +52,22 @@
                         </p>
 
                         <div class="mt-8 grid gap-4">
-                            <div class="rounded-2xl bg-slate-50 p-4">
+                            <div class="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4">
                                 <p class="text-sm font-semibold text-slate-900">Fast onboarding</p>
                                 <p class="mt-1 text-sm text-slate-600">Create an account and land on your dashboard immediately.</p>
                             </div>
-                            <div class="rounded-2xl bg-slate-50 p-4">
+                            <div class="rounded-2xl border border-cyan-100 bg-cyan-50/80 p-4">
                                 <p class="text-sm font-semibold text-slate-900">Profile-first flow</p>
                                 <p class="mt-1 text-sm text-slate-600">Complete class, school, subject, and area details when ready.</p>
                             </div>
-                            <div class="rounded-2xl bg-slate-50 p-4">
+                            <div class="rounded-2xl border border-violet-100 bg-violet-50/80 p-4">
                                 <p class="text-sm font-semibold text-slate-900">Mobile friendly</p>
                                 <p class="mt-1 text-sm text-slate-600">The UI scales cleanly on desktop, tablet, and phone.</p>
                             </div>
                         </div>
                     </section>
 
-                    <div class="mx-auto w-full {{ $contentWidth }} {{ $showSidebar ? 'rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.10)] sm:p-8' : 'rounded-none border-0 bg-transparent p-0 shadow-none' }}">
+                    <div class="mx-auto w-full {{ $contentWidth }} {{ $showSidebar ? 'rounded-[2rem] border border-sky-200/80 bg-gradient-to-br from-white to-slate-50 p-6 shadow-[0_20px_55px_rgba(14,116,144,0.14)] sm:p-8' : 'rounded-none border-0 bg-transparent p-0 shadow-none' }}">
                         {{ $slot }}
                     </div>
                 </div>

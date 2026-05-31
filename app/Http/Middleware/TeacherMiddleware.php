@@ -16,9 +16,12 @@ class TeacherMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
+        Auth::shouldUse('teacher');
+        $request->session()->put('active_guard', 'teacher');
 
-        if (! $user || (($user->role ?? '') !== 'teacher' && ($user->role ?? '') !== 'admin')) {
+        $user = Auth::guard('teacher')->user();
+
+        if (! $user || ($user->role ?? '') !== 'teacher') {
             abort(403, 'Teacher access required.');
         }
 

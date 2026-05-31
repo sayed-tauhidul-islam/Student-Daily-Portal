@@ -10,6 +10,7 @@ use Illuminate\Auth\MustVerifyEmail;
 use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Notifications\Notifiable;
 
@@ -30,10 +31,35 @@ class User extends Model implements AuthenticatableContract, MustVerifyEmailCont
         'image',
         'phone',
         'area',
+        'status',
+        'blocked_at',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        $image = trim((string) ($this->attributes['image'] ?? ''));
+
+        if ($image === '') {
+            return null;
+        }
+
+        if (preg_match('/^https?:\/\//i', $image)) {
+            return $image;
+        }
+
+        $normalized = ltrim($image, '/');
+
+        if (str_starts_with($normalized, 'storage/')) {
+            return asset($normalized);
+        }
+
+        return Storage::disk('public')->exists($normalized)
+            ? Storage::disk('public')->url($normalized)
+            : null;
+    }
 }

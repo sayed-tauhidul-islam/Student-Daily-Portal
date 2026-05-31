@@ -42,6 +42,42 @@
                     <h3 class="mt-2 text-2xl font-black text-slate-950">View all school records</h3>
                     <p class="mt-3 text-sm leading-6 text-slate-500">Open a single panel to review school users, teachers, and students with edit/delete/add access.</p>
                 </a>
+
+                <a href="{{ route('teacher-admin.messages') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-600">Conversations</p>
+                    <h3 class="mt-2 text-2xl font-black text-slate-950">Inspect chats</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-500">Review teacher-student conversations and contact everyone from one secure messenger.</p>
+                </a>
+
+                <a href="{{ route('teacher-admin.complaints') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-rose-600">Complaints</p>
+                    <h3 class="mt-2 text-2xl font-black text-slate-950">Resolve complaints</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-500">See complaints from students and teachers, add actions, and publish decision notices.</p>
+                </a>
+
+                <a href="{{ route('teacher-admin.leaves') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">Leave management</p>
+                    <h3 class="mt-2 text-2xl font-black text-slate-950">Approve leave requests</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-500">Handle advance leave and absence applications from all institute members.</p>
+                </a>
+
+                <a href="{{ route('teacher-admin.payments') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-600">Payment center</p>
+                    <h3 class="mt-2 text-2xl font-black text-slate-950">Confirm fee and salary</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-500">Mark student tuition clear and teacher salary disbursed month by month.</p>
+                </a>
+
+                <a href="{{ route('teacher-admin.search') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-600">Search hub</p>
+                    <h3 class="mt-2 text-2xl font-black text-slate-950">Find any user quickly</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-500">Search teacher or student by name and check details, progress, and attendance instantly.</p>
+                </a>
+
+                <a href="{{ route('teacher-admin.login-reviews') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600">New logins</p>
+                    <h3 class="mt-2 text-2xl font-black text-slate-950">Review new sign-ins</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-500">Monitor recent login users and block/unblock suspicious accounts immediately.</p>
+                </a>
             </div>
         </div>
     </div>

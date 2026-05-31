@@ -44,6 +44,23 @@ TutorLink BD Student Daily Portal is built for school-level daily operations whe
 
 ## Core Features
 
+### Role-Based Feature Matrix
+| Feature / Permission | Student | Teacher | Head Sir (Teacher Admin) | Super Admin |
+|---|---|---|---|---|
+| Register & Login | Yes | Yes | Yes | Yes |
+| Complete / Update Own Profile | Yes | Yes | Limited | Limited |
+| Upload / Change Profile Image | Yes | Yes | Yes | Yes |
+| View Attendance | Yes | Yes | School-level visibility | System-level visibility |
+| Manage Attendance Records | No | Yes | No | Indirect control |
+| View Institute Teachers | Yes | Limited | Yes (school list) | Yes |
+| Create / Manage Notices | No | Yes | Limited | Yes |
+| Create Tuition Posts / Handle Requests | No | Yes | No | No |
+| Add / Edit / Delete Students | No | No | Yes (own school only) | Yes (all schools) |
+| Add / Edit / Delete Teachers | No | No | Yes (own school only) | Yes (all schools) |
+| Access School Database Panel | No | No | Yes | Yes |
+| Manage Schools / Subjects / Groups / Ratings | No | No | No | Yes |
+| Cross-School Administrative Access | No | No | No | Yes |
+
 ### Authentication & Roles
 - Registration and login for multiple roles
 - Role-based redirection to correct dashboard

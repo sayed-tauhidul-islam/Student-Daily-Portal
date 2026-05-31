@@ -1,7 +1,7 @@
 <x-app-layout>
     @php
         $user = Auth::user();
-        $avatarUrl = $user?->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->image) : null;
+        $avatarUrl = $user?->image_url;
         $selectedSubjects = $profile?->subjects ?: array_values(array_filter(array_map('trim', explode(',', (string) ($profile->subject ?? '')))));
         $hasAverageRating = ! empty($averageRating) && $averageRating > 0;
     @endphp
@@ -200,7 +200,19 @@
                                 </svg>
                                 <span>Browse requests</span>
                             </a>
-                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                            <a href="{{ route('teacher.messages') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                <span>Messenger</span>
+                            </a>
+                            <a href="{{ route('teacher.complaints') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                <span>Complaint desk</span>
+                            </a>
+                            <a href="{{ route('teacher.leaves') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                <span>Leave apply</span>
+                            </a>
+                            <a href="{{ route('teacher.payments') }}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                                <span>Salary status</span>
+                            </a>
+                            <a href="{{ route('profile.edit', ['portal' => 'teacher']) }}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M11.3 1.046a1 1 0 00-2.6 0l-.2 1.101a7.002 7.002 0 00-1.47.607l-.93-.62a1 1 0 00-1.32.122l-.62.62a1 1 0 00-.122 1.32l.62.93c-.25.47-.46.96-.607 1.47l-1.101.2a1 1 0 000 2.6l1.101.2c.147.51.357 1 .607 1.47l-.62.93a1 1 0 00.122 1.32l.62.62a1 1 0 001.32.122l.93-.62c.47.25.96.46 1.47.607l.2 1.101a1 1 0 002.6 0l.2-1.101c.51-.147 1-.357 1.47-.607l.93.62a1 1 0 001.32-.122l.62-.62a1 1 0 00.122-1.32l-.62-.93c.25-.47.46-.96.607-1.47l1.101-.2a1 1 0 000-2.6l-1.101-.2a7.002 7.002 0 00-.607-1.47l.62-.93a1 1 0 00-.122-1.32l-.62-.62a1 1 0 00-1.32-.122l-.93.62a7.002 7.002 0 00-1.47-.607l-.2-1.101ZM10 13a3 3 0 100-6 3 3 0 000 6Z" clip-rule="evenodd" />
                                 </svg>

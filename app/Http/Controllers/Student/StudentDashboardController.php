@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeacherPost;
+use App\Models\PaymentConfirmation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -81,6 +82,13 @@ class StudentDashboardController extends Controller
         })->sortByDesc('rating')->take(4)->values();
 
         $posts = TeacherPost::query()->orderBy('created_at', -1)->take(8)->get();
+        $currentMonth = now()->format('Y-m');
+        $tuitionPayment = PaymentConfirmation::query()
+            ->where('user_id', (string) Auth::id())
+            ->where('type', 'tuition_fee')
+            ->where('month', $currentMonth)
+            ->first();
+        $tuitionCleared = ! empty($tuitionPayment?->confirmed_at);
 
         return view('dashboard', compact(
             'profile',
@@ -93,7 +101,9 @@ class StudentDashboardController extends Controller
             'selectedSubjects',
             'schoolRecord',
             'schoolRating'
-            , 'posts'
+            , 'posts',
+            'tuitionCleared',
+            'currentMonth'
         ));
     }
 

@@ -17,9 +17,12 @@ class StudentMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
+        Auth::shouldUse('student');
+        $request->session()->put('active_guard', 'student');
 
-        if (! $user || (($user->role ?? 'student') !== 'student' && ($user->role ?? '') !== 'admin')) {
+        $user = Auth::guard('student')->user();
+
+        if (! $user || ($user->role ?? 'student') !== 'student') {
             abort(403, 'Student access required.');
         }
 

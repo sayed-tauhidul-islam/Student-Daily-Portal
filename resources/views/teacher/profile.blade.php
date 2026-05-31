@@ -11,7 +11,7 @@
                 <p class="mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">Add your subject, area, fee range, and verification details so students can find and trust you.</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <a href="{{ route('profile.edit') }}" class="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                <a href="{{ route('profile.edit', ['portal' => 'teacher']) }}" class="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M11.3 1.046a1 1 0 00-2.6 0l-.2 1.101a7.002 7.002 0 00-1.47.607l-.93-.62a1 1 0 00-1.32.122l-.62.62a1 1 0 00-.122 1.32l.62.93c-.25.47-.46.96-.607 1.47l-1.101.2a1 1 0 000 2.6l1.101.2c.147.51.357 1 .607 1.47l-.62.93a1 1 0 00.122 1.32l.62.62a1 1 0 001.32.122l.93-.62c.47.25.96.46 1.47.607l.2 1.101a1 1 0 002.6 0l.2-1.101c.51-.147 1-.357 1.47-.607l.93.62a1 1 0 001.32-.122l.62-.62a1 1 0 00.122-1.32l-.62-.93c.25-.47.46-.96.607-1.47l1.101-.2a1 1 0 000-2.6l-1.101-.2a7.002 7.002 0 00-.607-1.47l.62-.93a1 1 0 00-.122-1.32l-.62-.62a1 1 0 00-1.32-.122l-.93.62a7.002 7.002 0 00-1.47-.607l-.2-1.101ZM10 13a3 3 0 100-6 3 3 0 000 6Z" clip-rule="evenodd" />
                     </svg>

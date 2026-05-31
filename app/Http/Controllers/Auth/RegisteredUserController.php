@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\BlockedIdentity;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
@@ -76,6 +77,17 @@ class RegisteredUserController extends Controller
             ])->validate();
         }
 
+        $blockedIdentity = BlockedIdentity::query()
+            ->where('email', strtolower((string) $data['email']))
+            ->where('school', (string) ($data['school'] ?? ''))
+            ->first();
+
+        if ($blockedIdentity) {
+            throw ValidationException::withMessages([
+                'email' => 'This email is blocked for the selected school/college.',
+            ]);
+        }
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -125,7 +137,15 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        $guard = match ($role) {
+            'student' => 'student',
+            'teacher' => 'teacher',
+            'teacher_admin' => 'teacher_admin',
+            default => 'student',
+        };
+
+        Auth::guard($guard)->login($user);
+        Auth::shouldUse($guard);
 
         $request->session()->regenerate();
 

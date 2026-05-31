@@ -1,7 +1,7 @@
 <x-app-layout>
     @php
         $isEdit = !is_null($student);
-        $currentImageUrl = $user?->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->image) : null;
+        $currentImageUrl = $user?->image_url;
     @endphp
 
     <x-slot name="header">

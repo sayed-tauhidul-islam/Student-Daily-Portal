@@ -1,7 +1,10 @@
 <x-app-layout>
     @php
         $isEdit = !is_null($teacher);
-        $currentImageUrl = $user?->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->image) : null;
+        $currentImageUrl = $user?->image_url;
+        $selectedRole = old('role', $user?->role ?? $defaultRole ?? 'teacher');
+        $isHeadTeacher = $selectedRole === 'teacher_admin';
+        $backRoute = $isHeadTeacher ? route('admin.head-teachers.index') : route('admin.teachers.index');
     @endphp
 
     <x-slot name="header">
@@ -9,10 +12,10 @@
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">Admin</p>
                 <h2 class="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">
-                    {{ $isEdit ? 'Edit teacher profile' : 'Add teacher profile' }}
+                    {{ $isEdit ? 'Edit ' . ($isHeadTeacher ? 'head teacher' : 'teacher') . ' profile' : 'Add ' . ($isHeadTeacher ? 'head teacher' : 'teacher') . ' profile' }}
                 </h2>
                 <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                    Manage login details, professional profile, and avatar from one focused screen.
+                    Manage login details, professional profile, and avatar from one focused screen. Use this form for teachers or head teachers depending on the selected role.
                 </p>
             </div>
             <div class="flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
@@ -57,13 +60,14 @@
                             <div>
                                 <label class="mb-2 block text-sm font-semibold text-slate-700">Role</label>
                                 <select name="role" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
-                                    <option value="teacher" @selected(old('role', $user?->role ?? 'teacher') === 'teacher')>Teacher</option>
-                                    <option value="teacher_admin" @selected(old('role', $user?->role ?? '') === 'teacher_admin')>Head Teacher / Teacher Admin</option>
+                                    <option value="teacher" @selected($selectedRole === 'teacher')>Teacher</option>
+                                    <option value="teacher_admin" @selected($selectedRole === 'teacher_admin')>Head Teacher</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="mb-2 block text-sm font-semibold text-slate-700">School / College</label>
-                                <input name="school" value="{{ old('school', $user?->school ?? $teacher?->institution) }}" placeholder="School or college name" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <input name="school" value="{{ old('school', $user?->school ?? $teacher?->institution) }}" placeholder="Boyra Secondary School" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none transition focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100">
+                                <p class="mt-2 text-xs text-slate-500">This links the account to a school so the correct roster can show it later.</p>
                             </div>
                         </div>
 
@@ -147,8 +151,8 @@
                         </div>
 
                         <div class="flex flex-wrap gap-3">
-                            <button class="rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">Save teacher</button>
-                            <a href="{{ route('admin.teachers.index') }}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Back to list</a>
+                                <button class="rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">Save {{ $isHeadTeacher ? 'head teacher' : 'teacher' }}</button>
+                                <a href="{{ $backRoute }}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Back to list</a>
                         </div>
                     </div>
 

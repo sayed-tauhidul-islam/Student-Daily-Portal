@@ -16,9 +16,12 @@ class TeacherAdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
+        Auth::shouldUse('teacher_admin');
+        $request->session()->put('active_guard', 'teacher_admin');
 
-        if (! $user || ($user->role ?? '') !== 'teacher_admin') {
+        $user = Auth::guard('teacher_admin')->user();
+
+        if (! $user || (($user->role ?? '') !== 'teacher_admin' && ($user->role ?? '') !== 'admin' && ($user->role ?? '') !== 'super_admin')) {
             abort(403, 'Teacher admin access required.');
         }
 

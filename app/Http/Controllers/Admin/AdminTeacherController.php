@@ -20,11 +20,16 @@ class AdminTeacherController extends Controller
         $search = trim((string) $request->query('q', ''));
 
         $teachers = Teacher::query()->get()->filter(function ($teacher) use ($search) {
+            $user = User::find($teacher->user_id);
+
+            if (! $user || ($user->role ?? '') !== 'teacher') {
+                return false;
+            }
+
             if ($search === '') {
                 return true;
             }
 
-            $user = User::find($teacher->user_id);
             $needle = strtolower($search);
             $teacherSubjects = collect($teacher->subjects ?? [$teacher->subject ?? '']);
 
@@ -49,11 +54,14 @@ class AdminTeacherController extends Controller
 
     public function create(Request $request): View
     {
+        $defaultRole = $request->query('role', 'teacher');
+
         return view('admin.teachers.form', [
             'teacher' => null,
             'user' => null,
             'subjects' => Subject::query()->orderBy('name')->get(),
             'institution' => $request->query('institution'),
+            'defaultRole' => in_array($defaultRole, ['teacher', 'teacher_admin'], true) ? $defaultRole : 'teacher',
             'action' => route('admin.teachers.store'),
             'method' => 'POST',
         ]);

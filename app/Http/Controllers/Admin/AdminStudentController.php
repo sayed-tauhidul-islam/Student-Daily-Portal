@@ -23,11 +23,16 @@ class AdminStudentController extends Controller
         $search = trim((string) $request->query('q', ''));
 
         $students = Student::query()->get()->filter(function ($student) use ($search) {
+            $user = User::find($student->user_id);
+
+            if (! $user || ($user->role ?? '') !== 'student') {
+                return false;
+            }
+
             if ($search === '') {
                 return true;
             }
 
-            $user = User::find($student->user_id);
             $needle = strtolower($search);
 
             return str_contains(strtolower((string) ($user?->name ?? '')), $needle)

@@ -70,7 +70,7 @@
                             @forelse($teachers as $teacher)
                                 @php
                                     $user = \App\Models\User::find($teacher->user_id);
-                                    $avatarUrl = $user?->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->image) : null;
+                                    $avatarUrl = $user?->image_url;
                                 @endphp
                                 <tr class="transition hover:bg-slate-50/80">
                                     <td class="px-6 py-5">

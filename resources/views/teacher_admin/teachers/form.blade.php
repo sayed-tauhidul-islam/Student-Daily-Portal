@@ -87,7 +87,7 @@
                 <div class="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
                     <div class="flex items-center gap-4">
                         <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.5rem] bg-slate-900 text-3xl font-black text-white">
-                            @php($currentImageUrl = $user?->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->image) : null)
+                            @php($currentImageUrl = $user?->image_url)
                             @if($currentImageUrl)
                                 <img id="teacher-admin-preview" src="{{ $currentImageUrl }}" class="h-full w-full object-cover">
                                 <span id="teacher-admin-fallback" class="hidden">{{ strtoupper(substr($user?->name ?? 'T', 0, 1)) }}</span>

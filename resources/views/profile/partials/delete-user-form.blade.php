@@ -15,7 +15,17 @@
     >{{ __('Delete Account') }}</x-danger-button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+        @php
+            $activePortal = request()->query('portal')
+                ?? match (session('active_guard')) {
+                    'teacher' => 'teacher',
+                    'teacher_admin' => 'teacher-admin',
+                    'admin' => 'admin',
+                    default => 'student',
+                };
+        @endphp
+
+        <form method="post" action="{{ route('profile.destroy', ['portal' => $activePortal]) }}" class="p-6">
             @csrf
             @method('delete')
 

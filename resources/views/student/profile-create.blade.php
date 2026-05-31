@@ -12,7 +12,7 @@
     <div class="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.14),_transparent_34%),radial-gradient(circle_at_right_bottom,_rgba(37,99,235,0.10),_transparent_30%),linear-gradient(180deg,_#f8fbff_0%,_#eef4fb_100%)] py-8">
         <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             @php
-                $avatarUrl = auth()->user()?->image ? \Illuminate\Support\Facades\Storage::disk('public')->url(auth()->user()->image) : null;
+                $avatarUrl = auth()->user()?->image_url;
             @endphp
 
             @php

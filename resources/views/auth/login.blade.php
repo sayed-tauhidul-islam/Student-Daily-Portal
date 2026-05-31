@@ -4,8 +4,8 @@
         'student' => [
             'label' => 'Student Panel',
             'eyebrow' => 'Student access',
-            'title' => 'Sign in to your student dashboard',
-            'description' => 'Use your student credentials to access attendance, notices, and your profile tools.',
+            'title' => 'Sign in to your account',
+            'description' => 'Choose the correct panel, then use your credentials to access your dashboard.',
             'button' => 'Log in as Student',
         ],
         'teacher-admin' => [
@@ -18,15 +18,15 @@
         'teacher' => [
             'label' => 'Teacher Panel',
             'eyebrow' => 'Teacher access',
-            'title' => 'Sign in to your teacher workspace',
-            'description' => 'Teachers can manage teaching tools, posts, notices, attendance, and tuition requests.',
+            'title' => 'Sign in to your account',
+            'description' => 'Choose the correct panel, then use your credentials to access your dashboard.',
             'button' => 'Log in as Teacher',
         ],
         'super-admin' => [
             'label' => 'Super Admin Panel',
             'eyebrow' => 'Private system access',
-            'title' => 'Sign in to the private super admin panel',
-            'description' => 'This panel is hidden from regular users and controls the whole system.',
+            'title' => 'Sign in to your account',
+            'description' => 'Choose the correct panel, then use your credentials to access your dashboard.',
             'button' => 'Log in as Super Admin',
         ],
     ];
@@ -43,7 +43,7 @@
             <button type="button" data-portal="student" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'student' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Student Panel</button>
             <button type="button" data-portal="teacher-admin" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'teacher-admin' ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600' }}">Teacher Admin Panel</button>
             <button type="button" data-portal="teacher" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'teacher' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Teacher Panel</button>
-            <button type="button" data-portal="super-admin" class="portal-btn hidden rounded-full border px-3 py-1.5 {{ $portal === 'super-admin' ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600' }}">Super Admin</button>
+            <button type="button" data-portal="super-admin" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'super-admin' ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600' }}">Super Admin Panel</button>
         </div>
     </div>
 

@@ -1,22 +1,45 @@
 @php
     // student links partial
 @endphp
-<x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+<x-nav-link :href="route('dashboard', ['portal' => 'student'])" :active="request()->routeIs('dashboard')">
     {{ __('Dashboard') }}
 </x-nav-link>
-<x-nav-link :href="route('student.profile.create')" :active="request()->routeIs('student.profile.create')">
-    {{ __('Complete Profile') }}
+<x-nav-link :href="route('student.school-members')" :active="request()->routeIs('student.school-members')">
+    {{ __('School Members') }}
 </x-nav-link>
-<!-- Tuition Requests removed from student nav per request -->
+<x-nav-link :href="route('student.messages')" :active="request()->routeIs('student.messages*')">
+    {{ __('Messenger') }}
+</x-nav-link>
+<x-nav-link :href="route('student.complaints')" :active="request()->routeIs('student.complaints*')">
+    {{ __('Complaint') }}
+</x-nav-link>
+<x-nav-link :href="route('student.leaves')" :active="request()->routeIs('student.leaves*')">
+    {{ __('Leave Apply') }}
+</x-nav-link>
+<x-nav-link :href="route('student.reading-logs')" :active="request()->routeIs('student.reading-logs*')">
+    {{ __('Reading Logs') }}
+</x-nav-link>
+<x-nav-link :href="route('student.payments')" :active="request()->routeIs('student.payments*')">
+    {{ __('Fee Status') }}
+</x-nav-link>
 <x-nav-link :href="route('teachers.index')" :active="request()->routeIs('teachers.index')">
     {{ __('Find Teacher') }}
+</x-nav-link>
+<x-nav-link :href="route('student.progress-hub.index')" :active="request()->routeIs('student.progress-hub.*')">
+    {{ __('Progress Hub') }}
 </x-nav-link>
 <x-nav-link :href="route('student.attendance.index')" :active="request()->routeIs('student.attendance.*')">
     {{ __('Attendance') }}
 </x-nav-link>
 <x-nav-link :href="route('student.institute-teachers.index')" :active="request()->routeIs('student.institute-teachers.*')">
-    {{ __('Teachers of My Institute') }}
+    {{ __('Institute Teachers') }}
 </x-nav-link>
 <x-nav-link :href="route('student.notices.index')" :active="request()->routeIs('student.notices.*')">
-    {{ __('Notice') }}
+    {{ __('Notices') }}
+</x-nav-link>
+<x-nav-link :href="route('student.profile.create')" :active="request()->routeIs('student.profile.create')">
+    {{ __('Student Profile') }}
+</x-nav-link>
+<x-nav-link :href="route('profile.edit', ['portal' => 'student'])" :active="request()->routeIs('profile.*')">
+    {{ __('Profile Settings') }}
 </x-nav-link>

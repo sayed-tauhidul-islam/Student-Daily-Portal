@@ -16,9 +16,12 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
+        Auth::shouldUse('admin');
+        $request->session()->put('active_guard', 'admin');
 
-        if (! $user || ($user->role ?? '') !== 'admin') {
+        $user = Auth::guard('admin')->user();
+
+        if (! $user || (($user->role ?? '') !== 'admin' && ($user->role ?? '') !== 'super_admin')) {
             abort(403, 'Admin access required.');
         }
 

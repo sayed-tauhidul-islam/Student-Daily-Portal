@@ -19,7 +19,17 @@
             </button>
         </form>
 
-        <form method="POST" action="{{ route('logout') }}">
+        @php
+            $activePortal = request()->query('portal')
+                ?? match (session('active_guard')) {
+                    'teacher' => 'teacher',
+                    'teacher_admin' => 'teacher-admin',
+                    'admin' => 'admin',
+                    default => 'student',
+                };
+        @endphp
+
+        <form method="POST" action="{{ route('logout', ['portal' => $activePortal]) }}">
             @csrf
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
                 Log out

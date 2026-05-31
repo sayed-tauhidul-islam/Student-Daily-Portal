@@ -1,7 +1,7 @@
 <x-app-layout>
     @php
         $user = Auth::user();
-        $avatarUrl = $user?->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($user->image) : null;
+        $avatarUrl = $user?->image_url;
     @endphp
 
     <div class="py-8 lg:py-10">
@@ -227,21 +227,44 @@
                         <h3 class="mt-2 text-2xl font-bold text-[color:var(--app-text)]">Access everything fast</h3>
                         <p class="mt-3 text-sm leading-6 app-muted">Jump directly to profile, teacher search, and schools without extra clicks.</p>
 
+                        <div class="mt-4 rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3">
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] app-muted">Monthly Tuition</p>
+                            <p class="mt-1 text-sm font-semibold {{ $tuitionCleared ? 'text-emerald-500' : 'text-amber-500' }}">
+                                {{ $tuitionCleared ? 'Cleared for ' . $currentMonth : 'Pending for ' . $currentMonth }}
+                            </p>
+                        </div>
+
                         <div class="mt-5 space-y-3">
                             <a href="{{ route('student.profile.create') }}" class="flex items-center justify-between rounded-2xl bg-[color:var(--app-primary)] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90">
                                 <span>Open profile form</span>
                                 <span>→</span>
                             </a>
-                            <a href="{{ route('profile.edit') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                            <a href="{{ route('student.school-members') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                                <span>School members</span>
+                                <span>→</span>
+                            </a>
+                            <a href="{{ route('student.messages') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                                <span>Messenger</span>
+                                <span>→</span>
+                            </a>
+                            <a href="{{ route('student.complaints') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                                <span>Complaint desk</span>
+                                <span>→</span>
+                            </a>
+                            <a href="{{ route('student.leaves') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                                <span>Leave apply</span>
+                                <span>→</span>
+                            </a>
+                            <a href="{{ route('student.reading-logs') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                                <span>Reading logs</span>
+                                <span>→</span>
+                            </a>
+                            <a href="{{ route('student.payments') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                                <span>Fee status</span>
+                                <span>→</span>
+                            </a>
+                            <a href="{{ route('profile.edit', ['portal' => 'student']) }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
                                 <span>Settings</span>
-                                <span>→</span>
-                            </a>
-                            <a href="{{ route('teachers.index') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
-                                <span>Find teacher</span>
-                                <span>→</span>
-                            </a>
-                            <a href="{{ route('schools.index') }}" class="flex items-center justify-between rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
-                                <span>Browse schools</span>
                                 <span>→</span>
                             </a>
                         </div>
