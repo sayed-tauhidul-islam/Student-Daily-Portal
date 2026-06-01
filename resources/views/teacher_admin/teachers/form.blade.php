@@ -16,6 +16,12 @@
                 @csrf
                 @if($method !== 'POST') @method($method) @endif
 
+                @if ($errors->any())
+                    <div class="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-800">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+
                 <div class="grid gap-5 lg:grid-cols-2">
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-slate-700">Name</label>

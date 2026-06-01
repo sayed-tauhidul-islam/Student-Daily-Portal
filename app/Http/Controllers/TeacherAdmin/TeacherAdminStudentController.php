@@ -74,7 +74,7 @@ class TeacherAdminStudentController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:6'],
             'class' => ['required', 'string', 'max:50'],
             'group' => ['nullable', 'string', 'max:100'],
@@ -154,9 +154,25 @@ class TeacherAdminStudentController extends Controller
             $imagePath = null;
         }
 
+        if (! $user && ! empty($data['email'])) {
+            $user = User::query()->create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password'] ?: str()->random(16)),
+                'role' => 'student',
+                'school' => $student->school ?? $this->schoolName(),
+                'image' => $imagePath,
+                'phone' => $data['phone'] ?? null,
+                'area' => $data['area'],
+            ]);
+            $student->user_id = $user->getKey();
+        }
+
         if ($user) {
             $user->name = $data['name'];
-            $user->email = $data['email'];
+            if (! empty($data['email'])) {
+                $user->email = $data['email'];
+            }
             $user->school = $data['school'] ?? $student->school ?? $user->school;
             if (! empty($data['password'])) {
                 $user->password = Hash::make($data['password']);

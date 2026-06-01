@@ -77,7 +77,7 @@
                         <tbody class="divide-y divide-slate-100 bg-white text-slate-700">
                             @forelse($students as $student)
                                 @php
-                                    $user = \\App\\Models\\User::find($student->user_id);
+                                    $user = \App\Models\User::find($student->user_id);
                                     $avatarUrl = $user?->image_url;
                                 @endphp
                                 <tr class="transition hover:bg-slate-50/80">

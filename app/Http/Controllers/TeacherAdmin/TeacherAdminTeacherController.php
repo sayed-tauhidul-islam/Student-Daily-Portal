@@ -143,13 +143,13 @@ class TeacherAdminTeacherController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'password' => ['nullable', 'string', 'min:6'],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
-            'qualification' => ['required', 'string', 'max:255'],
+            'qualification' => ['nullable', 'string', 'max:255'],
             'experience' => ['nullable', 'string', 'max:255'],
-            'subject' => ['required', 'string', 'max:255'],
+            'subject' => ['nullable', 'string', 'max:255'],
             'subjects_text' => ['nullable', 'string', 'max:1000'],
             'salary' => ['nullable', 'numeric', 'min:0'],
             'area' => ['required', 'string', 'max:255'],
@@ -176,9 +176,24 @@ class TeacherAdminTeacherController extends Controller
             $imagePath = null;
         }
 
+        if (! $user && ! empty($data['email'])) {
+            $user = User::query()->create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password'] ?: str()->random(16)),
+                'role' => 'teacher',
+                'school' => $teacher->institution ?? $this->schoolName(),
+                'image' => $imagePath,
+                'area' => $data['area'],
+            ]);
+            $teacher->user_id = $user->getKey();
+        }
+
         if ($user) {
             $user->name = $data['name'];
-            $user->email = $data['email'];
+            if (! empty($data['email'])) {
+                $user->email = $data['email'];
+            }
             $user->school = $data['institution'] ?? $teacher->institution ?? $user->school;
             if (! empty($data['password'])) {
                 $user->password = Hash::make($data['password']);
@@ -190,10 +205,10 @@ class TeacherAdminTeacherController extends Controller
 
         $teacher->update([
             'name' => $data['name'],
-            'qualification' => $data['qualification'],
+            'qualification' => $data['qualification'] ?? null,
             'experience' => $data['experience'] ?? null,
-            'subject' => $data['subject'],
-            'subjects' => array_values(array_filter(array_map('trim', explode(',', (string) ($data['subjects_text'] ?? $data['subject']))))),
+            'subject' => $data['subject'] ?? null,
+            'subjects' => array_values(array_filter(array_map('trim', explode(',', (string) ($data['subjects_text'] ?? $data['subject'] ?? ''))))),
             'salary' => $data['salary'] ?? 0,
             'area' => $data['area'],
             'bio' => $data['bio'] ?? null,
