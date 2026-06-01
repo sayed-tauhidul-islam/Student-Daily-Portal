@@ -14,8 +14,14 @@ class ManageTeacherController extends Controller
     {
         $search = trim((string) $request->query('q', ''));
 
-        $headTeachers = Teacher::query()->get()->filter(function ($teacher) use ($search) {
-            $user = User::find($teacher->user_id);
+        $teachers = Teacher::query()->get();
+        $usersById = User::query()
+            ->whereIn('_id', $teachers->pluck('user_id')->filter()->unique()->values()->all())
+            ->get()
+            ->mapWithKeys(fn ($user) => [(string) $user->getKey() => $user]);
+
+        $headTeachers = $teachers->filter(function ($teacher) use ($search, $usersById) {
+            $user = $usersById[(string) $teacher->user_id] ?? null;
 
             if (! $user || ($user->role ?? '') !== 'teacher_admin') {
                 return false;
@@ -36,8 +42,8 @@ class ManageTeacherController extends Controller
                 || str_contains(strtolower((string) ($teacher->area ?? '')), $needle)
                 || str_contains(strtolower((string) ($teacher->institution ?? '')), $needle)
                 || $teacherSubjects->contains(fn ($subject) => str_contains(strtolower((string) $subject), $needle));
-        })->sortBy(function ($teacher) {
-            $user = User::find($teacher->user_id);
+        })->sortBy(function ($teacher) use ($usersById) {
+            $user = $usersById[(string) $teacher->user_id] ?? null;
 
             return strtolower((string) ($user?->school ?? $teacher->institution ?? $teacher->name ?? ''));
         })->values();

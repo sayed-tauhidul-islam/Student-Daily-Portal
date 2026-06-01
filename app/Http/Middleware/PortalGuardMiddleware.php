@@ -14,6 +14,16 @@ class PortalGuardMiddleware
      */
     private const GUARDS = ['admin', 'teacher_admin', 'teacher', 'student', 'web'];
 
+    private const PORTAL_ALIASES = [
+        'student' => 'student',
+        'teacher' => 'teacher',
+        'teacheradmin' => 'teacher_admin',
+        'teacher-admin' => 'teacher_admin',
+        'superadmin' => 'admin',
+        'super-admin' => 'admin',
+        'admin' => 'admin',
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         $guard = $this->resolveGuard($request);
@@ -46,12 +56,10 @@ class PortalGuardMiddleware
 
     private function portalToGuard(mixed $portal): ?string
     {
-        return match ((string) $portal) {
-            'student' => 'student',
-            'teacher' => 'teacher',
-            'teacher-admin' => 'teacher_admin',
-            'admin', 'super-admin' => 'admin',
-            default => null,
-        };
+        $portal = strtolower(trim((string) $portal));
+        $portal = preg_replace('/[\s_]+/', '-', $portal) ?? $portal;
+        $portal = preg_replace('/-+/', '-', $portal) ?? $portal;
+
+        return self::PORTAL_ALIASES[$portal] ?? self::PORTAL_ALIASES[str_replace('-', '', $portal)] ?? null;
     }
 }

@@ -12,14 +12,21 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
+    private const PORTAL_ALIASES = [
+        'student' => 'student',
+        'teacher' => 'teacher',
+        'teacheradmin' => 'teacher-admin',
+        'teacher-admin' => 'teacher-admin',
+        'superadmin' => 'super-admin',
+        'super-admin' => 'super-admin',
+    ];
+
     /**
      * Display the login view.
      */
     public function create(Request $request): View
     {
-        $portal = in_array($request->string('portal')->toString(), ['student', 'teacher', 'teacher-admin', 'super-admin'], true)
-            ? $request->string('portal')->toString()
-            : 'student';
+        $portal = $this->normalizePortal($request->query('portal'));
 
         return view('auth.login', [
             'portal' => $portal,
@@ -55,7 +62,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        return redirect()->intended(route('dashboard', ['portal' => $this->portalForRole((string) ($user?->role ?? 'student'))], false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
@@ -127,5 +134,14 @@ class AuthenticatedSessionController extends Controller
             'admin', 'super_admin' => 'admin',
             default => 'student',
         };
+    }
+
+    private function normalizePortal(?string $portal): string
+    {
+        $portal = strtolower(trim((string) $portal));
+        $portal = preg_replace('/[\s_]+/', '-', $portal) ?? $portal;
+        $portal = preg_replace('/-+/', '-', $portal) ?? $portal;
+
+        return self::PORTAL_ALIASES[$portal] ?? self::PORTAL_ALIASES[str_replace('-', '', $portal)] ?? 'student';
     }
 }

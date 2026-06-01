@@ -43,46 +43,12 @@ class SchoolPortalController extends Controller
     {
         $school = $this->currentSchool();
         [$students, $teachers, $usersById] = $this->schoolMembers($school);
-        $headTeachers = User::query()
-            ->where('role', 'teacher_admin')
-            ->get()
-            ->filter(fn ($user) => $this->sameSchool((string) $user->school))
-            ->values();
-        $contacts = collect();
         $role = Auth::user()?->role;
 
-        $schoolUsers = User::query()
-            ->whereIn('role', ['student', 'teacher', 'teacher_admin'])
-            ->get()
-            ->filter(fn ($user) => $school === '' || $this->sameSchool((string) $user->school))
+        $contacts = $usersById
+            ->values()
+            ->filter(fn ($user) => (string) $user->getKey() !== (string) Auth::id())
             ->values();
-
-        if ($role === 'student') {
-            $contacts = $schoolUsers
-                ->filter(fn ($user) => in_array($user->role, ['teacher', 'teacher_admin'], true))
-                ->merge($teachers->map(fn ($teacher) => $usersById[(string) $teacher->user_id] ?? null)->filter())
-                ->unique(fn ($user) => (string) $user->getKey())
-                ->values();
-        } elseif ($role === 'teacher') {
-            $contacts = $schoolUsers
-                ->filter(fn ($user) => in_array($user->role, ['student', 'teacher', 'teacher_admin'], true))
-                ->merge($students->map(fn ($student) => $usersById[(string) $student->user_id] ?? null)->filter())
-                ->merge($headTeachers)
-                ->unique(fn ($user) => (string) $user->getKey())
-                ->values();
-        } elseif ($role === 'teacher_admin') {
-            $contacts = $schoolUsers
-                ->filter(fn ($user) => in_array($user->role, ['student', 'teacher'], true))
-                ->merge($usersById->values()->filter(fn ($user) => in_array($user->role, ['student', 'teacher'], true)))
-                ->unique(fn ($user) => (string) $user->getKey())
-                ->values();
-        }
-
-        if ($contacts->isEmpty()) {
-            $contacts = $schoolUsers
-                ->filter(fn ($user) => (string) $user->getKey() !== (string) Auth::id())
-                ->values();
-        }
 
         if ($contacts->isEmpty()) {
             $contacts = User::query()
@@ -558,9 +524,31 @@ class SchoolPortalController extends Controller
 
     private function schoolMembers(string $school): array
     {
-        $students = Student::query()->get()->filter(fn ($student) => $this->schoolMatches((string) $student->school, $school))->values();
-        $teachers = Teacher::query()->get()->filter(fn ($teacher) => $this->schoolMatches((string) $teacher->institution, $school))->values();
-        $ids = $students->pluck('user_id')->merge($teachers->pluck('user_id'))->filter()->unique()->values();
+        $students = Student::query()
+            ->when($school !== '', fn ($query) => $query->where('school', $school))
+            ->get()
+            ->filter(fn ($student) => $this->schoolMatches((string) $student->school, $school))
+            ->values();
+
+        $teachers = Teacher::query()
+            ->when($school !== '', fn ($query) => $query->where('institution', $school))
+            ->get()
+            ->filter(fn ($teacher) => $this->schoolMatches((string) $teacher->institution, $school))
+            ->values();
+
+        $headTeachers = User::query()
+            ->where('role', 'teacher_admin')
+            ->when($school !== '', fn ($query) => $query->where('school', $school))
+            ->get()
+            ->filter(fn ($user) => $school !== '' && $this->sameSchool((string) $user->school))
+            ->values();
+
+        $ids = $students->pluck('user_id')
+            ->merge($teachers->pluck('user_id'))
+            ->merge($headTeachers->pluck('_id'))
+            ->filter()
+            ->unique()
+            ->values();
         $usersById = User::query()->whereIn('_id', $ids->all())->get()->mapWithKeys(fn ($user) => [(string) $user->getKey() => $user]);
 
         return [$students, $teachers, $usersById];

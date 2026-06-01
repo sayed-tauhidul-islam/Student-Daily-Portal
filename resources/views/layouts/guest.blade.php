@@ -13,14 +13,10 @@
         <link rel="shortcut icon" href="{{ asset('tb-favicon.svg') }}">
         <link rel="apple-touch-icon" href="{{ asset('tb-favicon.svg') }}">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=sora:400,500,600,700,800|outfit:400,500,600,700,800&display=swap" rel="stylesheet" />
-
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="antialiased text-slate-900" style="font-family: 'Outfit', sans-serif;">
+    <body class="antialiased text-slate-900" style="font-family: 'Segoe UI', Tahoma, sans-serif;">
         <div class="min-h-screen bg-[radial-gradient(circle_at_15%_10%,_rgba(34,197,94,0.18),_transparent_30%),radial-gradient(circle_at_90%_0%,_rgba(14,165,233,0.22),_transparent_36%),linear-gradient(140deg,_#f7fbff_0%,_#eef3ff_55%,_#fdf7ff_100%)]">
             <div class="absolute inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] [background-size:72px_72px]"></div>
 

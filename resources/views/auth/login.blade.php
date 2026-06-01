@@ -1,5 +1,8 @@
 @php
     $portal = $portal ?? request('portal', 'student');
+    $showPortalSwitch = in_array($portal, ['student', 'teacher'], true);
+    $showRegisterLink = in_array($portal, ['student', 'teacher'], true);
+    $showForgotPassword = $portal !== 'super-admin';
     $portalMeta = [
         'student' => [
             'label' => 'Student Panel',
@@ -12,7 +15,7 @@
             'label' => 'Teacher Admin Panel',
             'eyebrow' => 'Head teacher access',
             'title' => 'Sign in to your school control panel',
-            'description' => 'Head teachers can manage only their school or college students and teachers from this panel.',
+            'description' => 'Head teachers can access this panel only with admin-issued login details.',
             'button' => 'Log in as Head Teacher',
         ],
         'teacher' => [
@@ -25,8 +28,8 @@
         'super-admin' => [
             'label' => 'Super Admin Panel',
             'eyebrow' => 'Private system access',
-            'title' => 'Sign in to your account',
-            'description' => 'Choose the correct panel, then use your credentials to access your dashboard.',
+            'title' => 'Sign in to the private super admin panel',
+            'description' => 'This panel only accepts the fixed super admin login issued by the system owner.',
             'button' => 'Log in as Super Admin',
         ],
     ];
@@ -39,12 +42,12 @@
         <h2 class="mt-2 text-3xl font-black text-slate-950">{{ $meta['title'] }}</h2>
         <p class="mt-3 text-sm leading-6 text-slate-600">{{ $meta['description'] }}</p>
 
-        <div class="mt-6 flex flex-wrap gap-2 text-xs font-semibold" id="portal-tabs">
-            <button type="button" data-portal="student" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'student' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Student Panel</button>
-            <button type="button" data-portal="teacher-admin" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'teacher-admin' ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600' }}">Teacher Admin Panel</button>
-            <button type="button" data-portal="teacher" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'teacher' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Teacher Panel</button>
-            <button type="button" data-portal="super-admin" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'super-admin' ? 'border-slate-950 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-600' }}">Super Admin Panel</button>
-        </div>
+        @if ($showPortalSwitch)
+            <div class="mt-6 flex flex-wrap gap-2 text-xs font-semibold" id="portal-tabs">
+                <button type="button" data-portal="student" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'student' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Student Panel</button>
+                <button type="button" data-portal="teacher" class="portal-btn rounded-full border px-3 py-1.5 {{ $portal === 'teacher' ? 'border-sky-500 bg-sky-50 text-sky-700' : 'border-slate-200 bg-white text-slate-600' }}">Teacher Panel</button>
+            </div>
+        @endif
     </div>
 
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -90,7 +93,7 @@
                 Remember me
             </label>
 
-            @if (Route::has('password.request'))
+            @if ($showForgotPassword && Route::has('password.request'))
                 <a href="{{ route('password.request') }}" class="text-sm font-semibold text-sky-600 transition hover:text-sky-700">
                     Forgot password?
                 </a>
@@ -184,8 +187,10 @@
         })();
     </script>
 
-    <p class="mt-6 text-center text-sm text-slate-600">
-        Don’t have an account?
-        <a href="{{ route('register') }}" class="font-semibold text-sky-600 transition hover:text-sky-700">Create one now</a>
-    </p>
+        @if ($showRegisterLink)
+        <p class="mt-6 text-center text-sm text-slate-600">
+            Don’t have an account?
+            <a href="{{ route('register', ['portal' => $portal]) }}" class="font-semibold text-sky-600 transition hover:text-sky-700">Create an account</a>
+        </p>
+    @endif
 </x-guest-layout>

@@ -13,6 +13,15 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    private const PORTAL_ALIASES = [
+        'student' => 'student',
+        'teacher' => 'teacher',
+        'teacheradmin' => 'teacher-admin',
+        'teacher-admin' => 'teacher-admin',
+        'superadmin' => 'super-admin',
+        'super-admin' => 'super-admin',
+    ];
+
     private const PORTAL_ROLE_PRIORITY = [
         'student' => ['student', 'teacher', 'teacher_admin', 'admin', 'super_admin'],
         'teacher' => ['teacher', 'teacher_admin', 'admin', 'super_admin', 'student'],
@@ -38,7 +47,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'portal' => ['nullable', 'in:student,teacher,teacher-admin,super-admin'],
+            'portal' => ['nullable', 'string'],
         ];
     }
 
@@ -156,9 +165,11 @@ class LoginRequest extends FormRequest
 
     public function portal(): string
     {
-        $portal = $this->string('portal')->toString();
+        $portal = strtolower(trim((string) $this->string('portal')->toString()));
+        $portal = preg_replace('/[\s_]+/', '-', $portal) ?? $portal;
+        $portal = preg_replace('/-+/', '-', $portal) ?? $portal;
 
-        return array_key_exists($portal, self::PORTAL_ROLE_PRIORITY) ? $portal : 'student';
+        return self::PORTAL_ALIASES[$portal] ?? self::PORTAL_ALIASES[str_replace('-', '', $portal)] ?? 'student';
     }
 
     /**

@@ -18,11 +18,26 @@ class AdminDashboardController extends Controller
 {
     public function index(): View
     {
+        $schools = School::query()->orderBy('name')->get();
+        $schoolNames = $schools->filter(fn ($school) => ! str_contains(strtolower((string) ($school->type ?? 'school')), 'college'));
+        $collegeNames = $schools->filter(fn ($school) => str_contains(strtolower((string) ($school->type ?? '')), 'college'));
+
+        $teacherIds = Teacher::query()->pluck('user_id')->filter()->unique()->values();
+        $headTeacherIds = User::query()
+            ->whereIn('_id', $teacherIds->all())
+            ->where('role', 'teacher_admin')
+            ->pluck('_id')
+            ->map(fn ($id) => (string) $id)
+            ->values();
+
         return view('admin.dashboard', [
             'users' => User::query()->count(),
             'students' => Student::query()->count(),
             'teachers' => Teacher::query()->count(),
-            'schools' => School::query()->count(),
+            'schools' => $schools->count(),
+            'schoolNames' => $schoolNames,
+            'collegeNames' => $collegeNames,
+            'headTeachersCount' => $headTeacherIds->count(),
             'subjects' => Subject::query()->count(),
             'groups' => Group::query()->count(),
             'requests' => StudentRequest::query()->count(),

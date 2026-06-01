@@ -277,7 +277,7 @@
 
                         <div class="mt-4 space-y-3">
                             @forelse($posts as $post)
-                                @php $author = \App\Models\Teacher::where('user_id', $post->user_id)->first(); @endphp
+                                @php $author = $postAuthors[(string) $post->user_id] ?? null; @endphp
                                 <div class="rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3">
                                     <div class="flex items-start justify-between gap-3">
                                         <div>

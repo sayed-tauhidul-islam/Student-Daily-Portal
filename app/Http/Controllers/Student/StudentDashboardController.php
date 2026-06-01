@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\Student;
-use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeacherPost;
 use App\Models\PaymentConfirmation;
@@ -18,8 +17,6 @@ class StudentDashboardController extends Controller
     public function index(): View
     {
         $profile = Student::where('user_id', Auth::id())->first();
-        $schools = School::query()->orderBy('rating', 'desc')->get();
-        $subjects = Subject::query()->orderBy('name')->get();
         $teachers = Teacher::query()->get();
 
         $profileFields = ['class', 'group', 'school', 'subject', 'subjects', 'area', 'bio', 'phone'];
@@ -45,7 +42,7 @@ class StudentDashboardController extends Controller
 
         $selectedSubjects = $profile?->subjects ?: array_values(array_filter(array_map('trim', explode(',', (string) ($profile->subject ?? '')))));
         $schoolRecord = $profile && $profile->school
-            ? $schools->firstWhere('name', $profile->school)
+            ? School::query()->where('name', $profile->school)->first()
             : null;
         $schoolRating = $schoolRecord->rating ?? null;
         $teacherCount = 0;
@@ -81,7 +78,11 @@ class StudentDashboardController extends Controller
             return false;
         })->sortByDesc('rating')->take(4)->values();
 
-        $posts = TeacherPost::query()->orderBy('created_at', -1)->take(8)->get();
+        $posts = TeacherPost::query()->orderBy('created_at', 'desc')->take(8)->get();
+        $postAuthors = Teacher::query()
+            ->whereIn('user_id', $posts->pluck('user_id')->filter()->unique()->values()->all())
+            ->get()
+            ->mapWithKeys(fn ($teacher) => [(string) $teacher->user_id => $teacher]);
         $currentMonth = now()->format('Y-m');
         $tuitionPayment = PaymentConfirmation::query()
             ->where('user_id', (string) Auth::id())
@@ -94,14 +95,13 @@ class StudentDashboardController extends Controller
             'profile',
             'profileCompleteness',
             'missingFields',
-            'schools',
-            'subjects',
             'teacherCount',
             'teacherMatches',
             'selectedSubjects',
             'schoolRecord',
-            'schoolRating'
-            , 'posts',
+            'schoolRating',
+            'posts',
+            'postAuthors',
             'tuitionCleared',
             'currentMonth'
         ));

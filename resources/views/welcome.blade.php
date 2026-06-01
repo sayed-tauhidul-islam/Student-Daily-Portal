@@ -10,13 +10,12 @@
     <link rel="apple-touch-icon" href="{{ asset('tb-favicon.svg') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
 
         body {
@@ -59,15 +58,15 @@
                         <a href="{{ route('login', ['portal' => 'student']) }}" class="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-700">
                             Student Panel
                         </a>
-                        <a href="{{ route('login', ['portal' => 'teacher-admin']) }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">
+                        <!-- <a href="{{ route('login', ['portal' => 'teacher-admin']) }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">
                             Teacher Admin Panel
-                        </a>
+                        </a> -->
                         <a href="{{ route('login', ['portal' => 'teacher']) }}" class="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
                             Teacher Panel
                         </a>
-                        <a href="{{ route('register') }}" class="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
-                            Sign Up
-                        </a>
+                        <!-- <a href="{{ route('register') }}" class="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
+                            Student Sign Up
+                        </a> -->
                     </div>
 
                     <div class="mt-10 grid gap-4 sm:grid-cols-3">

@@ -18,12 +18,38 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
+    private const PORTAL_ALIASES = [
+        'student' => 'student',
+        'teacher' => 'teacher',
+        'teacheradmin' => 'teacher-admin',
+        'teacher-admin' => 'teacher-admin',
+        'superadmin' => 'super-admin',
+        'super-admin' => 'super-admin',
+    ];
+
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
+        $portal = $this->normalizePortal($request->query('portal'));
+
+        if (in_array($portal, ['teacher-admin', 'super-admin'], true)) {
+            return redirect()
+                ->route('login', ['portal' => $portal])
+                ->with('status', 'Registration is disabled for this portal.');
+        }
+
         return view('auth.register');
+    }
+
+    private function normalizePortal(?string $portal): string
+    {
+        $portal = strtolower(trim((string) $portal));
+        $portal = preg_replace('/[\s_]+/', '-', $portal) ?? $portal;
+        $portal = preg_replace('/-+/', '-', $portal) ?? $portal;
+
+        return self::PORTAL_ALIASES[$portal] ?? self::PORTAL_ALIASES[str_replace('-', '', $portal)] ?? 'student';
     }
 
     /**
@@ -37,7 +63,6 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['nullable', 'in:student,teacher,teacher_admin'],
             'phone' => ['nullable', 'string', 'max:30'],
             'area' => ['nullable', 'string', 'max:255'],
             'school' => ['nullable', 'string', 'max:255'],
@@ -53,28 +78,11 @@ class RegisteredUserController extends Controller
             'bio' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $role = $data['role'] ?? 'student';
-        $roleWasProvided = $request->filled('role');
-
-        if ($roleWasProvided && $role === 'student') {
-            validator($data, [
-                'school' => ['required', 'string', 'max:255'],
-                'class' => ['required', 'string', 'max:50'],
-            ])->validate();
-        }
-
-        if ($role === 'teacher') {
-            validator($data, [
-                'school' => ['required', 'string', 'max:255'],
-                'qualification' => ['required', 'string', 'max:255'],
-                'subject' => ['required', 'string', 'max:255'],
-            ])->validate();
-        }
-
-        if ($role === 'teacher_admin') {
-            validator($data, [
-                'school' => ['required', 'string', 'max:255'],
-            ])->validate();
+        $role = (string) $request->input('role', 'student');
+        if (! in_array($role, ['student', 'teacher'], true)) {
+            throw ValidationException::withMessages([
+                'role' => 'Only student and teacher registration is allowed from this page.',
+            ]);
         }
 
         $blockedIdentity = BlockedIdentity::query()
@@ -137,13 +145,9 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        $guard = match ($role) {
-            'student' => 'student',
-            'teacher' => 'teacher',
-            'teacher_admin' => 'teacher_admin',
-            default => 'student',
-        };
+        $guard = $role === 'teacher' ? 'teacher' : 'student';
 
+        Auth::login($user);
         Auth::guard($guard)->login($user);
         Auth::shouldUse($guard);
 

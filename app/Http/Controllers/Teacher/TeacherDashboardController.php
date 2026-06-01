@@ -16,16 +16,21 @@ class TeacherDashboardController extends Controller
     public function index(): View
     {
         $profile = Teacher::where('user_id', Auth::id())->first();
-        $matchedRequests = StudentRequest::query()->get()->filter(function ($request) use ($profile) {
-            if (! $profile) {
-                return false;
-            }
+        $school = trim((string) ($profile?->institution ?? Auth::user()?->school ?? ''));
 
-            $areaMatch = empty($profile->area) || str_contains(strtolower((string) ($request->area ?? '')), strtolower((string) $profile->area));
-            $subjectMatch = empty($profile->subject) || str_contains(strtolower((string) ($request->subject ?? '')), strtolower((string) $profile->subject));
+        $matchedRequests = StudentRequest::query()
+            ->when($school !== '', fn ($query) => $query->where('school', $school))
+            ->get()
+            ->filter(function ($request) use ($profile) {
+                if (! $profile) {
+                    return false;
+                }
 
-            return $areaMatch && $subjectMatch;
-        })->sortByDesc('created_at')->values();
+                $areaMatch = empty($profile->area) || str_contains(strtolower((string) ($request->area ?? '')), strtolower((string) $profile->area));
+                $subjectMatch = empty($profile->subject) || str_contains(strtolower((string) ($request->subject ?? '')), strtolower((string) $profile->subject));
+
+                return $areaMatch && $subjectMatch;
+            })->sortByDesc('created_at')->values();
 
         $teacherRatings = Rating::query()->where('target_id', (string) Auth::id());
         $averageRating = (float) $teacherRatings->avg('rating');
@@ -47,10 +52,12 @@ class TeacherDashboardController extends Controller
 
         $studentCount = $studentGroups->count();
         $estimatedEarnings = (int) $matchedRequests->sum(fn ($request) => (int) ($request->budget ?? 0));
-        $school = trim((string) ($profile?->institution ?? Auth::user()?->school ?? ''));
-        $schoolStudents = Student::query()->get()->filter(function (Student $student) use ($school) {
-            return $this->belongsToSchool((string) ($student->school ?? ''), $school);
-        })->values();
+        $schoolStudents = Student::query()
+            ->when($school !== '', fn ($query) => $query->where('school', $school))
+            ->get()
+            ->filter(function (Student $student) use ($school) {
+                return $school === '' ? false : $this->belongsToSchool((string) ($student->school ?? ''), $school);
+            })->values();
 
         $studentsByClass = collect(range(1, 10))->map(function ($class) use ($schoolStudents) {
             $count = $schoolStudents->filter(function (Student $student) use ($class) {
@@ -68,7 +75,10 @@ class TeacherDashboardController extends Controller
 
         return view('teacher.dashboard', [
             'profile' => $profile,
-            'requestCount' => StudentRequest::query()->where('status', 'pending')->count(),
+            'requestCount' => StudentRequest::query()
+                ->when($school !== '', fn ($query) => $query->where('school', $school))
+                ->where('status', 'pending')
+                ->count(),
             'featuredRequests' => $matchedRequests->take(5),
             'postCount' => TeacherPost::query()->where('user_id', Auth::id())->count(),
             'ratingCount' => Rating::query()->where('target_id', (string) Auth::id())->count(),

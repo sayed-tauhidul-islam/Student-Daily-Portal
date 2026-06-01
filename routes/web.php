@@ -59,7 +59,7 @@ Route::get('/dashboard', function (Request $request) {
         default => redirect()->route('student.dashboard'),
     };
 })
-    ->middleware(['auth:student,teacher,teacher_admin,admin'])
+    ->middleware(['auth:student,teacher,teacher_admin,admin', 'portal_guard'])
     ->name('dashboard');
 
 Route::get('/schools', [SchoolController::class, 'index'])

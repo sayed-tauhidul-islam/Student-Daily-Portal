@@ -16,13 +16,19 @@ class TeacherAdminDashboardController extends Controller
         $user = Auth::user();
         $school = trim((string) ($user?->school ?? ''));
 
-        $students = Student::query()->get()->filter(function (Student $student) use ($school) {
-            return $this->belongsToSchool((string) ($student->school ?? ''), $school);
-        })->values();
+        $students = Student::query()
+            ->when($school !== '', fn ($query) => $query->where('school', $school))
+            ->get()
+            ->filter(function (Student $student) use ($school) {
+                return $school === '' ? false : $this->belongsToSchool((string) ($student->school ?? ''), $school);
+            })->values();
 
-        $teachers = Teacher::query()->get()->filter(function (Teacher $teacher) use ($school) {
-            return $this->belongsToSchool((string) ($teacher->institution ?? ''), $school);
-        })->values();
+        $teachers = Teacher::query()
+            ->when($school !== '', fn ($query) => $query->where('institution', $school))
+            ->get()
+            ->filter(function (Teacher $teacher) use ($school) {
+                return $school === '' ? false : $this->belongsToSchool((string) ($teacher->institution ?? ''), $school);
+            })->values();
 
         return view('teacher_admin.dashboard', [
             'school' => $school,
@@ -37,13 +43,19 @@ class TeacherAdminDashboardController extends Controller
     {
         $school = trim((string) (Auth::user()?->school ?? ''));
 
-        $students = Student::query()->get()->filter(function (Student $student) use ($school) {
-            return $this->belongsToSchool((string) ($student->school ?? ''), $school);
-        })->values();
+        $students = Student::query()
+            ->when($school !== '', fn ($query) => $query->where('school', $school))
+            ->get()
+            ->filter(function (Student $student) use ($school) {
+                return $school === '' ? false : $this->belongsToSchool((string) ($student->school ?? ''), $school);
+            })->values();
 
-        $teachers = Teacher::query()->get()->filter(function (Teacher $teacher) use ($school) {
-            return $this->belongsToSchool((string) ($teacher->institution ?? ''), $school);
-        })->values();
+        $teachers = Teacher::query()
+            ->when($school !== '', fn ($query) => $query->where('institution', $school))
+            ->get()
+            ->filter(function (Teacher $teacher) use ($school) {
+                return $school === '' ? false : $this->belongsToSchool((string) ($teacher->institution ?? ''), $school);
+            })->values();
 
         $userIds = $students->pluck('user_id')
             ->merge($teachers->pluck('user_id'))

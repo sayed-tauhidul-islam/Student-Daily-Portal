@@ -319,6 +319,13 @@
 </head>
 <body>
 
+@php
+  $portal = strtolower(trim((string) request('portal', 'student')));
+  $portal = preg_replace('/[\s_]+/', '-', $portal) ?? $portal;
+  $portal = preg_replace('/-+/', '-', $portal) ?? $portal;
+  $selectedRole = in_array($portal, ['teacher', 'teacher-admin'], true) ? 'teacher' : 'student';
+@endphp
+
 <main class="page-wrapper" aria-label="Create account">
 
   <!-- LEFT -->
@@ -331,8 +338,8 @@
     </div>
 
     <div>
-      <h1 class="left-headline">Smart, fast onboarding for <em>students</em> and teachers</h1>
-      <p class="left-sub">Create your account, complete a short profile, and get started with tutoring tools and classroom workflows.</p>
+      <h1 class="left-headline">Fast onboarding for <em>students and teachers</em></h1>
+      <p class="left-sub">Create a student or teacher account, complete a short profile, and get started with tutoring tools and classroom workflows.</p>
     </div>
 
     <ul class="feature-list" aria-label="Benefits">
@@ -342,7 +349,7 @@
       </li>
       <li>
         <span class="check-icon"><svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="2,6 5,9 10,3"/></svg></span>
-        Role-based onboarding — student, teacher, or admin
+        Student and teacher onboarding
       </li>
       <li>
         <span class="check-icon"><svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="2,6 5,9 10,3"/></svg></span>
@@ -366,7 +373,7 @@
     </div>
 
     <div class="left-footer">
-      Already have an account? <a href="{{ route('login') }}" class="login-link">Sign in</a>
+      Already have an account? <a href="{{ route('login', ['portal' => $selectedRole]) }}" class="login-link">Sign in</a>
     </div>
   </aside>
 
@@ -375,23 +382,21 @@
 
     <div class="form-head">
       <h2>Create your account</h2>
-      <p>Choose a role and provide your basic information to get started.</p>
+      <p>Choose student or teacher, then provide your basic information to get started.</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}" novalidate>
       @csrf
-      <input type="hidden" name="role" id="roleInput" value="student" />
+      <input type="hidden" name="role" id="roleInput" value="{{ $selectedRole }}" />
       @if ($errors->any())
         <div style="margin-bottom:1rem;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;padding:.75rem 1rem;border-radius:10px;font-size:12.5px;">
           {{ $errors->first() }}
         </div>
       @endif
 
-      <!-- Role selector -->
       <div class="role-tabs" role="tablist" aria-label="Select account role" style="margin-bottom:1.25rem">
-        <button type="button" class="role-btn active" data-role="student" role="tab" aria-selected="true" onclick="switchRole('student')">Student Panel</button>
-        <button type="button" class="role-btn" data-role="teacher" role="tab" aria-selected="false" onclick="switchRole('teacher')">Teacher Panel</button>
-        <button type="button" class="role-btn" data-role="teacher_admin" role="tab" aria-selected="false" onclick="switchRole('teacher_admin')">Teacher Admin Panel</button>
+        <button type="button" class="role-btn {{ $selectedRole === 'student' ? 'active' : '' }}" data-role="student" role="tab" aria-selected="{{ $selectedRole === 'student' ? 'true' : 'false' }}" onclick="switchRole('student')">Student Panel</button>
+        <button type="button" class="role-btn {{ $selectedRole === 'teacher' ? 'active' : '' }}" data-role="teacher" role="tab" aria-selected="{{ $selectedRole === 'teacher' ? 'true' : 'false' }}" onclick="switchRole('teacher')">Teacher Panel</button>
       </div>
 
       <!-- Basic info -->
