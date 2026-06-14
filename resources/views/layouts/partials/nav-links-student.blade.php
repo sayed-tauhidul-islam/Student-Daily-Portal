@@ -1,7 +1,7 @@
 @php
     // student links partial
 @endphp
-<x-nav-link :href="route('dashboard', ['portal' => 'student'])" :active="request()->routeIs('dashboard')">
+<x-nav-link :href="route('dashboard', ['portal' => 'student'])" :active="request()->routeIs('dashboard') || request()->routeIs('student.dashboard')">
     {{ __('Dashboard') }}
 </x-nav-link>
 <x-nav-link :href="route('student.school-members')" :active="request()->routeIs('student.school-members')">

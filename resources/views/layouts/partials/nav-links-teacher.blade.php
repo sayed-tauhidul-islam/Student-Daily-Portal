@@ -31,6 +31,9 @@
 <x-nav-link :href="route('teacher.progress.index')" :active="request()->routeIs('teacher.progress.*')">
     {{ __('Student Progress') }}
 </x-nav-link>
+<x-nav-link :href="route('teacher.students.index')" :active="request()->routeIs('teacher.students.*')">
+    {{ __('Student Details') }}
+</x-nav-link>
 <x-nav-link :href="route('teacher.profile.create')" :active="request()->routeIs('teacher.profile.create')">
     {{ __('Teacher Profile') }}
 </x-nav-link>

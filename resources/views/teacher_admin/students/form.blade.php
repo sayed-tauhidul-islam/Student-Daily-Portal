@@ -1,4 +1,5 @@
 <x-app-layout>
+    @php($panel = $panel ?? (request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher'))
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -6,7 +7,7 @@
                 <h2 class="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">{{ $method === 'POST' ? 'Add student' : 'Edit student' }}</h2>
                 <p class="mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">Update student details for {{ $school !== '' ? $school : 'your school' }} only.</p>
             </div>
-            <a href="{{ route('teacher-admin.students.index') }}" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Back to list</a>
+            <a href="{{ route($panel.'.students.index') }}" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Back to list</a>
         </div>
     </x-slot>
 

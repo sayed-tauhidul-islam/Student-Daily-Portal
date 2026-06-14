@@ -8,6 +8,7 @@
     </x-slot>
 
     <div class="grid gap-6 xl:grid-cols-[0.4fr_0.6fr]">
+        @if(auth()->user()?->role === 'student')
         <section class="app-surface rounded-2xl p-5">
             <h3 class="text-xl font-black">Add Reading Session</h3>
             <form method="POST" action="{{ route('student.reading-logs.store') }}" class="mt-4 space-y-4">
@@ -41,13 +42,18 @@
                 <button type="submit" class="rounded-full bg-[color:var(--app-primary)] px-5 py-2.5 text-sm font-semibold text-white">Save Reading Log</button>
             </form>
         </section>
+        @endif
 
-        <section class="app-surface rounded-2xl p-5">
+        <section class="app-surface rounded-2xl p-5 {{ auth()->user()?->role === 'student' ? '' : 'xl:col-span-2' }}">
             <h3 class="text-xl font-black">Saved Sessions</h3>
             <div class="mt-4 space-y-3 max-h-[35rem] overflow-auto pr-1">
                 @forelse($logs as $log)
+                    @php $studentUser = $usersById[(string) ($log->student_user_id ?? '')] ?? null; @endphp
                     <div class="rounded-2xl border border-[color:var(--app-border)] p-4">
                         <p class="font-bold">{{ $log->book_name }}</p>
+                        @if(auth()->user()?->role !== 'student')
+                            <p class="text-xs app-muted">Student: {{ $studentUser?->name ?? 'Student' }}</p>
+                        @endif
                         <p class="text-xs app-muted">Subject: {{ $log->subject ?? 'N/A' }}</p>
                         <p class="text-xs app-muted">Date: {{ $log->read_date }}</p>
                         <p class="text-xs app-muted">Time: {{ $log->start_time }} - {{ $log->end_time }} ({{ $log->duration_minutes ?? 0 }} minutes)</p>

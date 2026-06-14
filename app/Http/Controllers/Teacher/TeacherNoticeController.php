@@ -8,6 +8,7 @@ use App\Models\Teacher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class TeacherNoticeController extends Controller
@@ -22,6 +23,7 @@ class TeacherNoticeController extends Controller
                 'institute' => null,
                 'notices' => collect(),
                 'search' => $search,
+                'panel' => $this->panel(),
             ]);
         }
 
@@ -44,6 +46,7 @@ class TeacherNoticeController extends Controller
             'institute' => $institute,
             'notices' => $notices,
             'search' => $search,
+            'panel' => $this->panel(),
         ]);
     }
 
@@ -57,6 +60,8 @@ class TeacherNoticeController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:5000'],
+            'attachments' => ['nullable', 'array', 'max:10'],
+            'attachments.*' => ['file', 'max:10240', 'mimes:jpg,jpeg,png,webp,gif,pdf,xls,xlsx,doc,docx,txt,csv,md'],
         ]);
 
         Notice::create([
@@ -64,6 +69,7 @@ class TeacherNoticeController extends Controller
             'teacher_user_id' => Auth::id(),
             'title' => $data['title'],
             'body' => $data['body'],
+            'attachments' => $this->storeAttachments($request),
             'published_at' => now(),
         ]);
 
@@ -80,6 +86,7 @@ class TeacherNoticeController extends Controller
         return view('teacher.notices.edit', [
             'notice' => $notice,
             'institute' => $institute,
+            'panel' => $this->panel(),
         ]);
     }
 
@@ -93,15 +100,23 @@ class TeacherNoticeController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:5000'],
+            'attachments' => ['nullable', 'array', 'max:10'],
+            'attachments.*' => ['file', 'max:10240', 'mimes:jpg,jpeg,png,webp,gif,pdf,xls,xlsx,doc,docx,txt,csv,md'],
         ]);
+
+        $attachments = collect($notice->attachments ?? [])
+            ->merge($this->storeAttachments($request))
+            ->values()
+            ->all();
 
         $notice->update([
             'title' => $data['title'],
             'body' => $data['body'],
+            'attachments' => $attachments,
             'published_at' => now(),
         ]);
 
-        return redirect()->route('teacher.notices.index')->with('success', 'Notice updated.');
+        return redirect()->route($this->routeName('notices.index'))->with('success', 'Notice updated.');
     }
 
     public function destroy(Notice $notice): RedirectResponse
@@ -111,6 +126,12 @@ class TeacherNoticeController extends Controller
             abort(403, 'Not allowed to delete this notice.');
         }
 
+        foreach (($notice->attachments ?? []) as $attachment) {
+            if (! empty($attachment['path'])) {
+                Storage::disk('public')->delete($attachment['path']);
+            }
+        }
+
         $notice->delete();
 
         return back()->with('success', 'Notice deleted.');
@@ -118,9 +139,39 @@ class TeacherNoticeController extends Controller
 
     private function teacherInstitute(): string
     {
+        if ((Auth::user()?->role ?? '') === 'teacher_admin') {
+            return trim((string) (Auth::user()?->school ?? ''));
+        }
+
         $teacher = Teacher::query()->firstWhere('user_id', Auth::id());
 
-        return trim((string) ($teacher?->institution ?? ''));
+        return trim((string) ($teacher?->institution ?? Auth::user()?->school ?? ''));
+    }
+
+    /**
+     * @return array<int, array<string, string|int|null>>
+     */
+    private function storeAttachments(Request $request): array
+    {
+        if (! $request->hasFile('attachments')) {
+            return [];
+        }
+
+        return collect($request->file('attachments'))
+            ->filter()
+            ->map(function ($file) {
+                $path = $file->store('notice-attachments', 'public');
+
+                return [
+                    'path' => $path,
+                    'name' => $file->getClientOriginalName(),
+                    'mime' => $file->getClientMimeType(),
+                    'size' => $file->getSize(),
+                    'url' => Storage::disk('public')->url($path),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     private function canManage(Notice $notice, string $institute): bool
@@ -137,5 +188,15 @@ class TeacherNoticeController extends Controller
         $value = preg_replace('/\s+/', ' ', $value) ?? $value;
 
         return trim($value);
+    }
+
+    private function panel(): string
+    {
+        return (Auth::user()?->role ?? '') === 'teacher_admin' ? 'teacher-admin' : 'teacher';
+    }
+
+    private function routeName(string $name): string
+    {
+        return $this->panel().'.'.$name;
     }
 }

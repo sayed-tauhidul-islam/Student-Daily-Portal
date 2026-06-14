@@ -107,7 +107,7 @@
                     </div>
 
                     {{-- GROUP --}}
-                    <div>
+                    <div x-show="shouldShowGroup()" x-transition>
                         <label for="group" class="mb-2 block text-sm font-semibold text-slate-700">Group</label>
                         <div class="relative" @click.outside="openGroupList = false">
                             <input
@@ -414,17 +414,20 @@
                 },
                 filterTeachers() {
                     const query = this.teacherQuery.trim().toLowerCase();
-                    const areaQuery = this.areaQuery.trim().toLowerCase();
+                    const selectedSchool = this.schoolQuery.trim().toLowerCase();
                     const filtered = this.teacherList.filter((teacher) => {
                         const name = (teacher.name || '').toLowerCase();
                         const institution = (teacher.institution || '').toLowerCase();
                         const subject = (teacher.subject || '').toLowerCase();
-                        const area = (teacher.area || '').toLowerCase();
 
                         const matchText = !query || name.includes(query) || institution.includes(query) || subject.includes(query);
-                        const matchArea = !areaQuery || area.includes(areaQuery);
+                        const matchSchool = selectedSchool && institution && (
+                            institution === selectedSchool ||
+                            institution.includes(selectedSchool) ||
+                            selectedSchool.includes(institution)
+                        );
 
-                        return matchText && matchArea;
+                        return matchText && matchSchool;
                     });
 
                     this.teacherMatches = filtered.slice(0, 20);
@@ -449,7 +452,7 @@
                     this.openSubjectList = true;
                 },
                 showAllTeachers() {
-                    this.teacherMatches = this.teacherList.slice(0, 100);
+                    this.filterTeachers();
                     this.openTeacherList = true;
                 },
                 showAllAreas() {
@@ -468,9 +471,11 @@
                 chooseSchool(school) {
                     this.schoolQuery    = school.name;
                     if (school.area) { this.areaQuery = school.area; }
+                    this.teacherQuery = '';
                     this.openSchoolList = false;
                     this.schoolMatches  = [];
                     this.filterAreas();
+                    this.filterTeachers();
                 },
                 chooseGroup(group) {
                     this.groupQuery    = group;
@@ -479,6 +484,9 @@
                 },
                 chooseClass(cls) {
                     this.classQuery    = cls;
+                    if (!this.shouldShowGroup()) {
+                        this.groupQuery = '';
+                    }
                     this.openClassList = false;
                     this.classMatches  = [];
                 },
@@ -513,8 +521,19 @@
                     this.selectedSubjects = this.selectedSubjects.filter((item) => item !== subject);
                     this.filterSubjects();
                 },
+                classNumber() {
+                    const match = String(this.classQuery || '').match(/\d+/);
+                    return match ? Number(match[0]) : null;
+                },
+                shouldShowGroup() {
+                    const number = this.classNumber();
+                    return number === null || number < 1 || number > 8;
+                },
 
                 init() {
+                    if (!this.shouldShowGroup()) {
+                        this.groupQuery = '';
+                    }
                     this.filterSchools();
                     this.filterSubjects();
                     this.filterTeachers();

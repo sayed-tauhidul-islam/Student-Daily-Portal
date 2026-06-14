@@ -87,6 +87,34 @@ class StudentProgressHubController extends Controller
         $examAverage = $examResults->count() > 0
             ? round($examResults->avg(fn ($row) => ((float) $row->marks / max((float) $row->out_of, 1)) * 100), 1)
             : 0;
+        $progressBreakdown = collect([
+            ['label' => 'Attendance', 'score' => $progress?->attendance_score, 'color' => '#14b8a6'],
+            ['label' => 'Reading', 'score' => $progress?->reading_score, 'color' => '#3b82f6'],
+            ['label' => 'Writing', 'score' => $progress?->writing_score, 'color' => '#8b5cf6'],
+            ['label' => 'Assignments', 'score' => $progress?->assignment_score, 'color' => '#f59e0b'],
+            ['label' => 'Behaviour', 'score' => $progress?->behavior_score, 'color' => '#10b981'],
+            ['label' => 'Exams', 'score' => $examResults->count() > 0 ? $examAverage : null, 'color' => '#ef4444'],
+        ])->filter(fn ($item) => $item['score'] !== null && $item['score'] !== '')
+            ->map(fn ($item) => $item + ['score' => round((float) $item['score'], 1)])
+            ->values();
+        $combinedProgress = $progressBreakdown->isNotEmpty()
+            ? round($progressBreakdown->avg('score'), 1)
+            : (float) ($progress?->overall_score ?? 0);
+        $progressChartGradient = 'rgba(148,163,184,0.22) 0 100%';
+        if ($progressBreakdown->isNotEmpty()) {
+            $totalScore = max((float) $progressBreakdown->sum('score'), 1);
+            $cursor = 0.0;
+            $segments = [];
+
+            foreach ($progressBreakdown as $item) {
+                $slice = ((float) $item['score'] / $totalScore) * 100;
+                $end = $cursor + $slice;
+                $segments[] = sprintf('%s %.2f%% %.2f%%', $item['color'], $cursor, $end);
+                $cursor = $end;
+            }
+
+            $progressChartGradient = implode(', ', $segments);
+        }
         $examBySubject = $examResults
             ->groupBy('subject')
             ->map(function ($rows, $subject) {
@@ -123,6 +151,9 @@ class StudentProgressHubController extends Controller
             'examAverage' => $examAverage,
             'examBySubject' => $examBySubject,
             'examTrend' => $examTrend,
+            'progressBreakdown' => $progressBreakdown,
+            'combinedProgress' => $combinedProgress,
+            'progressChartGradient' => $progressChartGradient,
             'parentAccess' => $parentAccess,
         ]);
     }

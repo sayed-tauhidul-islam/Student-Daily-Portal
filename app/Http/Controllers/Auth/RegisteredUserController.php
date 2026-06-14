@@ -10,7 +10,6 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -145,14 +144,9 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        $guard = $role === 'teacher' ? 'teacher' : 'student';
-
-        Auth::login($user);
-        Auth::guard($guard)->login($user);
-        Auth::shouldUse($guard);
-
-        $request->session()->regenerate();
-
-        return redirect()->route('dashboard');
+        return redirect()
+            ->route('login', ['portal' => $role])
+            ->with('status', 'Signup successful. Please log in with your email and password.')
+            ->withInput(['email' => $data['email']]);
     }
 }

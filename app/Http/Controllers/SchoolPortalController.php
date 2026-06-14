@@ -44,13 +44,23 @@ class SchoolPortalController extends Controller
         $school = $this->currentSchool();
         [$students, $teachers, $usersById] = $this->schoolMembers($school);
         $role = Auth::user()?->role;
+        $search = trim((string) $request->query('q', ''));
 
         $contacts = $usersById
             ->values()
             ->filter(fn ($user) => (string) $user->getKey() !== (string) Auth::id())
+            ->filter(function ($user) use ($search) {
+                if ($search === '') {
+                    return true;
+                }
+
+                $haystack = strtolower((string) ($user->name ?? '').' '.(string) ($user->email ?? '').' '.str_replace('_', ' ', (string) ($user->role ?? '')));
+
+                return str_contains($haystack, strtolower($search));
+            })
             ->values();
 
-        if ($contacts->isEmpty()) {
+        if ($contacts->isEmpty() && $school === '' && $search === '') {
             $contacts = User::query()
                 ->whereIn('role', ['student', 'teacher', 'teacher_admin'])
                 ->where('_id', '!=', Auth::id())
@@ -93,7 +103,7 @@ class SchoolPortalController extends Controller
                 ->update(['read_at' => now()]);
         }
 
-        return view('portal.messages', compact('contacts', 'receiver', 'peer', 'messages', 'school'));
+        return view('portal.messages', compact('contacts', 'receiver', 'peer', 'messages', 'school', 'search'));
     }
 
     public function sendMessage(Request $request): RedirectResponse
@@ -197,11 +207,20 @@ class SchoolPortalController extends Controller
         ]);
 
         $against = $data['against_user_id'] ? User::find($data['against_user_id']) : null;
+        $creatorRole = Auth::user()?->role;
+
+        if ($creatorRole === 'student') {
+            if ($against) {
+                abort_unless(in_array($against->role, ['student', 'teacher'], true), 403, 'Students can complain against students or teachers only.');
+            }
+
+            abort_if($against && $against->role === 'teacher_admin', 403, 'Students cannot complain against Head Sir.');
+        }
 
         Complaint::create([
             'school' => $this->currentSchool(),
             'created_by' => (string) Auth::id(),
-            'creator_role' => Auth::user()?->role,
+            'creator_role' => $creatorRole,
             'against_user_id' => $against ? (string) $against->getKey() : null,
             'against_name' => $against?->name ?? $data['against_name'] ?? 'Not specified',
             'against_role' => $against?->role,
@@ -304,6 +323,35 @@ class SchoolPortalController extends Controller
         return view('portal.payments', compact('school', 'students', 'teachers', 'usersById', 'payments'));
     }
 
+    public function submitPayment(Request $request): RedirectResponse
+    {
+        abort_unless(Auth::user()?->role === 'student', 403);
+
+        $data = $request->validate([
+            'month' => ['required', 'string', 'max:30'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        PaymentConfirmation::updateOrCreate(
+            ['user_id' => (string) Auth::id(), 'type' => 'tuition_fee', 'month' => $data['month']],
+            [
+                'school' => $this->currentSchool(),
+                'role' => 'student',
+                'amount' => $data['amount'],
+                'status' => 'pending',
+                'submitted_by' => (string) Auth::id(),
+                'submitted_at' => now(),
+                'confirmed_by' => null,
+                'confirmed_at' => null,
+                'receiver_confirmed_at' => null,
+                'note' => $data['note'] ?? null,
+            ]
+        );
+
+        return back()->with('success', 'Tuition fee submitted for Head Sir approval.');
+    }
+
     public function storePayment(Request $request): RedirectResponse
     {
         abort_unless(Auth::user()?->role === 'teacher_admin', 403);
@@ -322,6 +370,7 @@ class SchoolPortalController extends Controller
                 'school' => $this->currentSchool(),
                 'role' => $user->role,
                 'amount' => $data['amount'] ?? null,
+                'status' => 'approved',
                 'confirmed_by' => (string) Auth::id(),
                 'confirmed_at' => now(),
                 'note' => $data['note'] ?? null,
@@ -329,6 +378,26 @@ class SchoolPortalController extends Controller
         );
 
         return back()->with('success', 'Payment confirmation saved.');
+    }
+
+    public function approvePayment(Request $request, PaymentConfirmation $payment): RedirectResponse
+    {
+        abort_unless(Auth::user()?->role === 'teacher_admin' && $this->sameSchool((string) $payment->school), 403);
+
+        $data = $request->validate([
+            'status' => ['required', 'in:approved,rejected'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $payment->status = $data['status'];
+        $payment->confirmed_by = (string) Auth::id();
+        $payment->confirmed_at = $data['status'] === 'approved' ? now() : null;
+        if (array_key_exists('note', $data)) {
+            $payment->note = $data['note'];
+        }
+        $payment->save();
+
+        return back()->with('success', $data['status'] === 'approved' ? 'Tuition fee approved.' : 'Tuition fee rejected.');
     }
 
     public function confirmReceived(PaymentConfirmation $payment): RedirectResponse
@@ -342,9 +411,16 @@ class SchoolPortalController extends Controller
 
     public function readingLogs(): View
     {
-        $logs = ReadingLog::query()->where('student_user_id', (string) Auth::id())->orderBy('read_date', 'desc')->get();
+        $school = $this->currentSchool();
+        $logs = ReadingLog::query()
+            ->when(Auth::user()?->role === 'student', fn ($query) => $query->where('student_user_id', (string) Auth::id()))
+            ->when(Auth::user()?->role !== 'student', fn ($query) => $query->where('school', $school))
+            ->orderBy('read_date', 'desc')
+            ->get();
+        $usersById = User::query()->whereIn('_id', $logs->pluck('student_user_id')->filter()->unique()->values()->all())->get()
+            ->mapWithKeys(fn ($user) => [(string) $user->getKey() => $user]);
 
-        return view('portal.reading-logs', compact('logs'));
+        return view('portal.reading-logs', compact('logs', 'usersById'));
     }
 
     public function storeReadingLog(Request $request): RedirectResponse
@@ -469,6 +545,7 @@ class SchoolPortalController extends Controller
         abort_unless(in_array($senderRole, ['student', 'teacher', 'teacher_admin'], true), 403);
         abort_unless(in_array($receiverRole, ['student', 'teacher', 'teacher_admin'], true), 403);
         abort_unless((string) Auth::id() !== (string) $receiver->getKey(), 403);
+        abort_unless($this->schoolMatches($this->receiverSchool($receiver), $this->currentSchool()), 403);
     }
 
     private function canViewConversationMessage(Message $message, string $viewerId, string $viewerRole): bool
@@ -543,7 +620,7 @@ class SchoolPortalController extends Controller
             ->filter(fn ($user) => $school !== '' && $this->sameSchool((string) $user->school))
             ->values();
 
-        $ids = $students->pluck('user_id')
+        $ids = collect($students->pluck('user_id'))
             ->merge($teachers->pluck('user_id'))
             ->merge($headTeachers->pluck('_id'))
             ->filter()
@@ -552,6 +629,15 @@ class SchoolPortalController extends Controller
         $usersById = User::query()->whereIn('_id', $ids->all())->get()->mapWithKeys(fn ($user) => [(string) $user->getKey() => $user]);
 
         return [$students, $teachers, $usersById];
+    }
+
+    private function receiverSchool(User $receiver): string
+    {
+        return match ($receiver->role) {
+            'student' => (string) (Student::query()->firstWhere('user_id', $receiver->getKey())?->school ?? $receiver->school ?? ''),
+            'teacher' => (string) (Teacher::query()->firstWhere('user_id', $receiver->getKey())?->institution ?? $receiver->school ?? ''),
+            default => (string) ($receiver->school ?? ''),
+        };
     }
 
     private function sameSchool(string $school): bool

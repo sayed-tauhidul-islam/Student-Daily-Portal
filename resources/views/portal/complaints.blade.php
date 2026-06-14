@@ -3,7 +3,7 @@
         <div>
             <p class="text-xs font-semibold uppercase tracking-[0.24em] app-accent">Complaint Desk</p>
             <h2 class="mt-2 text-3xl font-black text-[color:var(--app-text)]">Institute Complaint Management</h2>
-            <p class="mt-2 text-sm app-muted">Submit complaints against students or teachers. Head authority can review and take actions.</p>
+            <p class="mt-2 text-sm app-muted">Students can submit complaints against students or teachers. Head authority can review and take actions.</p>
         </div>
     </x-slot>
 

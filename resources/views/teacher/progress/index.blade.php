@@ -1,4 +1,5 @@
 <x-app-layout>
+    @php($panel = request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher')
     <x-slot name="header">
         <div>
             <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">Teacher Panel</p>
@@ -20,7 +21,8 @@
                     @forelse($students as $student)
                         @php
                             $user = $userMap[(string) ($student->user_id ?? '')] ?? null;
-                            $progress = $progressMap[(string) ($student->user_id ?? '')] ?? null;
+                            $progressKey = trim((string) ($student->user_id ?? '')) !== '' ? (string) $student->user_id : 'student:'.$student->getKey();
+                            $progress = $progressMap[$progressKey] ?? null;
                             $weak = collect($progress?->subjects ?? [])->sortBy('score')->first();
                         @endphp
                         <tr class="border-b">
@@ -28,7 +30,18 @@
                             <td class="px-4 py-3">{{ $student->class ?? '-' }}</td>
                             <td class="px-4 py-3">{{ (int) ($progress->overall_score ?? 0) }}%</td>
                             <td class="px-4 py-3">{{ $weak['name'] ?? 'N/A' }}</td>
-                            <td class="px-4 py-3"><a href="{{ route('teacher.progress.edit', $student) }}" class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">Track / Edit</a></td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-2">
+                                    <a href="{{ route($panel.'.progress.edit', $student) }}" class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">Track / Edit</a>
+                                    @if($panel === 'teacher-admin')
+                                        <form method="POST" action="{{ route('teacher-admin.progress.destroy', $student) }}" data-confirm-delete>
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Delete progress</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No students found in your school.</td></tr>
@@ -38,4 +51,3 @@
         </div>
     </div>
 </x-app-layout>
-

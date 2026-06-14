@@ -43,6 +43,12 @@
                     <p class="mt-3 text-sm leading-6 text-slate-500">Open a single panel to review school users, teachers, and students with edit/delete/add access.</p>
                 </a>
 
+                <a href="{{ route('teacher-admin.notices.index') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-violet-600">Notice board</p>
+                    <h3 class="mt-2 text-2xl font-black text-slate-950">Post institute notices</h3>
+                    <p class="mt-3 text-sm leading-6 text-slate-500">Publish text notices with images, PDF, Excel, Word, CSV, TXT, or Markdown attachments.</p>
+                </a>
+
                 <a href="{{ route('teacher-admin.messages') }}" class="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200">
                     <p class="text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-600">Conversations</p>
                     <h3 class="mt-2 text-2xl font-black text-slate-950">Inspect chats</h3>

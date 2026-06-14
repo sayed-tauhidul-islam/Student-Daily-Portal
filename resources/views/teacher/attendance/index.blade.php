@@ -1,4 +1,5 @@
 <x-app-layout>
+    @php($panel = $panel ?? (request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher'))
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -16,7 +17,7 @@
                     Complete your teacher profile and set your institute first.
                 </div>
             @else
-                <form method="POST" action="{{ route('teacher.attendance.store') }}" class="grid gap-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:grid-cols-5">
+                <form method="POST" action="{{ route($panel.'.attendance.store') }}" class="grid gap-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] lg:grid-cols-5">
                     @csrf
                     <select name="student_user_id" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm outline-none focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100 lg:col-span-2" required>
                         <option value="">Select student</option>
@@ -42,7 +43,7 @@
                         <div class="flex gap-2">
                             <button class="rounded-2xl bg-slate-950 px-4 py-3.5 text-sm font-semibold text-white">Search</button>
                             @if(!empty($search))
-                                <a href="{{ route('teacher.attendance.index') }}" class="rounded-2xl border border-slate-200 px-4 py-3.5 text-sm font-semibold text-slate-700">Reset</a>
+                                <a href="{{ route($panel.'.attendance.index') }}" class="rounded-2xl border border-slate-200 px-4 py-3.5 text-sm font-semibold text-slate-700">Reset</a>
                             @endif
                         </div>
                     </div>
@@ -69,8 +70,8 @@
                                         <td class="px-4 py-4 text-slate-600">{{ $record->note ?: '—' }}</td>
                                         <td class="px-4 py-4">
                                             <div class="flex gap-2">
-                                                <a href="{{ route('teacher.attendance.edit', $record) }}" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Edit</a>
-                                                <form method="POST" action="{{ route('teacher.attendance.destroy', $record) }}" data-confirm-delete>
+                                                <a href="{{ route($panel.'.attendance.edit', $record) }}" class="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Edit</a>
+                                                <form method="POST" action="{{ route($panel.'.attendance.destroy', $record) }}" data-confirm-delete>
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="rounded-full border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700">Delete</button>

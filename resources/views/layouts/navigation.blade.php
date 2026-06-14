@@ -1,7 +1,6 @@
 @php
     $user = Auth::user();
     $role = $user?->role;
-    $avatarUrl = $user?->image_url;
     $dashboardPortal = match ($role) {
         'teacher' => 'teacher',
         'teacher_admin' => 'teacher-admin',
@@ -58,29 +57,9 @@
             </div>
 
             <div class="border-t border-[color:var(--app-border)] px-4 py-4">
-                <div class="mb-3 flex gap-2">
-                    <button type="button" onclick="window.setDashboardTheme('dark')" class="sidebar-theme-btn">Dark</button>
-                    <button type="button" onclick="window.setDashboardTheme('light')" class="sidebar-theme-btn">Light</button>
-                    <button type="button" onclick="window.setDashboardTheme('default')" class="sidebar-theme-btn">Retro</button>
-                </div>
-
-                <div class="sidebar-user-card">
-                    <a href="{{ route('profile.edit', ['portal' => $dashboardPortal]) }}" class="user-avatar overflow-hidden" aria-label="Open profile settings">
-                        @if ($avatarUrl)
-                            <img src="{{ $avatarUrl }}" alt="{{ $user?->name }}" class="h-full w-full object-cover">
-                        @else
-                            {{ strtoupper(substr($user?->name ?? 'U', 0, 1)) }}
-                        @endif
-                    </a>
-                    <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-semibold text-[color:var(--app-text)]">{{ $user?->name }}</p>
-                        <p class="truncate text-xs text-[color:var(--app-muted)]">{{ $user?->area ?? $user?->email }}</p>
-                        <a href="{{ route('profile.edit', ['portal' => $dashboardPortal]) }}" class="mt-2 inline-flex items-center gap-2 rounded-full border border-[color:var(--sidebar-card-border)] bg-[color:var(--sidebar-card-bg)] px-3 py-1.5 text-xs font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
-                            <span class="inline-block h-2 w-2 rounded-full bg-[color:var(--app-primary)]"></span>
-                            Profile Settings
-                        </a>
-                    </div>
-                </div>
+                <a href="{{ route('profile.edit', ['portal' => $dashboardPortal]) }}" class="block rounded-2xl border border-[color:var(--sidebar-card-border)] bg-[color:var(--sidebar-card-bg)] px-4 py-3 text-sm font-semibold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">
+                    Profile Settings
+                </a>
             </div>
         </div>
     </aside>

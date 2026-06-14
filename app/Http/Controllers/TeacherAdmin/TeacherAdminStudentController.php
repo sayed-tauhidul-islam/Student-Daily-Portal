@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\TeacherAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\Student;
+use App\Models\StudentExamResult;
+use App\Models\StudentProgress;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -43,7 +46,12 @@ class TeacherAdminStudentController extends Controller
 
         $students = $this->paginateCollection($students, $request, 8);
 
-        return view('teacher_admin.students.index', compact('students', 'search', 'school'));
+        return view('teacher_admin.students.index', [
+            'students' => $students,
+            'search' => $search,
+            'school' => $school,
+            'panel' => $this->panel(),
+        ]);
     }
 
     public function edit(Student $student): View
@@ -54,8 +62,36 @@ class TeacherAdminStudentController extends Controller
             'student' => $student,
             'user' => User::find($student->user_id),
             'school' => $this->schoolName(),
-            'action' => route('teacher-admin.students.update', $student),
+            'panel' => $this->panel(),
+            'action' => route($this->routeName('students.update'), $student),
             'method' => 'PUT',
+        ]);
+    }
+
+    public function show(Student $student): View
+    {
+        $this->ensureSchoolAccess($student->school ?? null);
+
+        $attendance = Attendance::query()
+            ->where('student_user_id', (string) $student->user_id)
+            ->orderBy('date', 'desc')
+            ->get()
+            ->filter(fn ($record) => $this->belongsToSchool((string) ($record->institute ?? ''), $this->schoolName()))
+            ->values();
+        $progress = StudentProgress::query()->firstWhere('student_user_id', $this->progressKey($student));
+        $examResults = StudentExamResult::query()
+            ->where('student_user_id', $this->progressKey($student))
+            ->orderBy('exam_date', 'desc')
+            ->get();
+
+        return view('teacher_admin.students.show', [
+            'student' => $student,
+            'user' => User::find($student->user_id),
+            'attendance' => $attendance,
+            'progress' => $progress,
+            'examResults' => $examResults,
+            'school' => $this->schoolName(),
+            'panel' => $this->panel(),
         ]);
     }
 
@@ -65,7 +101,8 @@ class TeacherAdminStudentController extends Controller
             'student' => new Student(),
             'user' => null,
             'school' => $this->schoolName(),
-            'action' => route('teacher-admin.students.store'),
+            'panel' => $this->panel(),
+            'action' => route($this->routeName('students.store')),
             'method' => 'POST',
         ]);
     }
@@ -85,7 +122,7 @@ class TeacherAdminStudentController extends Controller
             'bio' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        if (User::query()->where('email', $data['email'])->exists()) {
+        if (! empty($data['email']) && User::query()->where('email', $data['email'])->exists()) {
             return back()
                 ->withErrors(['email' => 'This email is already registered.'])
                 ->withInput();
@@ -116,7 +153,7 @@ class TeacherAdminStudentController extends Controller
             'bio' => $data['bio'] ?? null,
         ]);
 
-        return redirect()->route('teacher-admin.students.index')->with('success', 'Student added successfully.');
+        return redirect()->route($this->routeName('students.index'))->with('success', 'Student added successfully.');
     }
 
     public function update(Request $request, Student $student): RedirectResponse
@@ -127,13 +164,12 @@ class TeacherAdminStudentController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'password' => ['nullable', 'string', 'min:6'],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
             'class' => ['required', 'string', 'max:50'],
             'group' => ['nullable', 'string', 'max:100'],
-            'school' => ['nullable', 'string', 'max:255'],
             'subject' => ['nullable', 'string', 'max:1000'],
             'preferred_teacher' => ['nullable', 'string', 'max:255'],
             'area' => ['required', 'string', 'max:255'],
@@ -168,12 +204,14 @@ class TeacherAdminStudentController extends Controller
             $student->user_id = $user->getKey();
         }
 
+        $school = $this->schoolName();
+
         if ($user) {
             $user->name = $data['name'];
             if (! empty($data['email'])) {
                 $user->email = $data['email'];
             }
-            $user->school = $data['school'] ?? $student->school ?? $user->school;
+            $user->school = $school;
             if (! empty($data['password'])) {
                 $user->password = Hash::make($data['password']);
             }
@@ -186,7 +224,7 @@ class TeacherAdminStudentController extends Controller
         $student->update([
             'class' => $data['class'],
             'group' => $data['group'] ?? null,
-            'school' => $data['school'] ?? $student->school,
+            'school' => $school,
             'subject' => $data['subject'] ?? null,
             'subjects' => array_values(array_filter(array_map('trim', explode(',', (string) ($data['subject'] ?? ''))))),
             'preferred_teacher' => $data['preferred_teacher'] ?? null,
@@ -195,7 +233,7 @@ class TeacherAdminStudentController extends Controller
             'bio' => $data['bio'] ?? null,
         ]);
 
-        return redirect()->route('teacher-admin.students.index')->with('success', 'Student updated.');
+        return redirect()->route($this->routeName('students.index'))->with('success', 'Student updated.');
     }
 
     public function destroy(Student $student): RedirectResponse
@@ -215,7 +253,28 @@ class TeacherAdminStudentController extends Controller
 
     private function schoolName(): string
     {
+        if ((Auth::user()?->role ?? '') === 'teacher') {
+            return trim((string) (Teacher::query()->firstWhere('user_id', Auth::id())?->institution ?? Auth::user()?->school ?? ''));
+        }
+
         return trim((string) (Auth::user()?->school ?? ''));
+    }
+
+    private function panel(): string
+    {
+        return (Auth::user()?->role ?? '') === 'teacher_admin' ? 'teacher-admin' : 'teacher';
+    }
+
+    private function routeName(string $name): string
+    {
+        return $this->panel().'.'.$name;
+    }
+
+    private function progressKey(Student $student): string
+    {
+        $userId = trim((string) ($student->user_id ?? ''));
+
+        return $userId !== '' ? $userId : 'student:'.$student->getKey();
     }
 
     private function ensureSchoolAccess(?string $school): void

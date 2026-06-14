@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\TeacherMatcher;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -21,17 +22,16 @@ class StudentInstituteTeacherController extends Controller
                 'student' => $student,
                 'institute' => null,
                 'teachers' => collect(),
+                'matchSummary' => 'Complete your profile and select your school, area, and subjects to see matched teachers.',
             ]);
         }
 
-        $teachers = Teacher::query()->get()
-            ->filter(function ($teacher) use ($institute) {
-                return $this->normalizeInstitute((string) ($teacher->institution ?? '')) === $this->normalizeInstitute($institute);
-            })
-            ->sortBy(function ($teacher) {
-                return strtolower((string) ($teacher->name ?? ''));
-            })
-            ->values();
+        $allTeachers = Teacher::query()->get();
+        $teachers = TeacherMatcher::forStudent($student, $allTeachers);
+
+        if ($teachers->isEmpty()) {
+            $teachers = TeacherMatcher::schoolTeachers($student, $allTeachers);
+        }
 
         $userIds = $teachers->pluck('user_id')->filter()->unique()->values();
         $users = User::query()->whereIn('_id', $userIds->all())->get(['_id', 'email', 'phone']);
@@ -49,16 +49,22 @@ class StudentInstituteTeacherController extends Controller
             'student' => $student,
             'institute' => $institute,
             'teachers' => $teachers,
+            'matchSummary' => $this->matchSummary($student),
         ]);
     }
 
-    private function normalizeInstitute(string $value): string
+    private function matchSummary(?Student $student): string
     {
-        $value = strtolower(trim($value));
-        $value = str_replace(['&'], ' and ', $value);
-        $value = preg_replace('/[^a-z0-9\s]/', ' ', $value) ?? $value;
-        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+        $parts = array_filter([
+            $student?->school ? 'school: '.$student->school : null,
+            $student?->area ? 'area: '.$student->area : null,
+            TeacherMatcher::studentSubjects($student)->isNotEmpty()
+                ? 'subjects: '.TeacherMatcher::studentSubjects($student)->implode(', ')
+                : null,
+        ]);
 
-        return trim($value);
+        return $parts
+            ? 'Matched by '.implode(' | ', $parts).'.'
+            : 'Add school, area, and subjects to improve teacher matches.';
     }
 }

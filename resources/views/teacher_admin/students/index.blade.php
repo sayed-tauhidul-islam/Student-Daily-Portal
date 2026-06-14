@@ -1,4 +1,5 @@
 <x-app-layout>
+    @php($panel = $panel ?? (request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher'))
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -7,8 +8,8 @@
                 <p class="mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">Only students from {{ $school !== '' ? $school : 'your assigned school' }} are shown here. Search, review profile images, and manage records from one place.</p>
             </div>
             <div class="flex gap-2">
-                <a href="{{ route('teacher-admin.students.create') }}" class="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100">Add student</a>
-                <a href="{{ route('teacher-admin.dashboard') }}" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Back to dashboard</a>
+                <a href="{{ route($panel.'.students.create') }}" class="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100">Add student</a>
+                <a href="{{ route($panel.'.dashboard') }}" class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">Back to dashboard</a>
             </div>
         </div>
     </x-slot>
@@ -49,7 +50,7 @@
                     <div class="flex gap-2">
                         <button class="rounded-2xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800">Search</button>
                         @if($search !== '')
-                            <a href="{{ route('teacher-admin.students.index') }}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Reset</a>
+                            <a href="{{ route($panel.'.students.index') }}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Reset</a>
                         @endif
                     </div>
                 </div>
@@ -107,8 +108,9 @@
                                     <td class="px-6 py-5">{{ $student->area ?? '—' }}</td>
                                     <td class="px-6 py-5">
                                         <div class="flex flex-wrap gap-2">
-                                            <a href="{{ route('teacher-admin.students.edit', $student) }}" class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100">Edit</a>
-                                            <form method="POST" action="{{ route('teacher-admin.students.destroy', $student) }}" data-confirm-delete>
+                                            <a href="{{ route($panel.'.students.show', $student) }}" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">View</a>
+                                            <a href="{{ route($panel.'.students.edit', $student) }}" class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100">Edit</a>
+                                            <form method="POST" action="{{ route($panel.'.students.destroy', $student) }}" data-confirm-delete>
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">Delete</button>

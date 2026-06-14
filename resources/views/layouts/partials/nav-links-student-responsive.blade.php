@@ -1,4 +1,4 @@
-<x-responsive-nav-link :href="route('dashboard', ['portal' => 'student'])" :active="request()->routeIs('dashboard')">
+<x-responsive-nav-link :href="route('dashboard', ['portal' => 'student'])" :active="request()->routeIs('dashboard') || request()->routeIs('student.dashboard')">
     {{ __('Dashboard') }}
 </x-responsive-nav-link>
 <x-responsive-nav-link :href="route('student.school-members')" :active="request()->routeIs('student.school-members')">

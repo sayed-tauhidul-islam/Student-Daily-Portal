@@ -22,6 +22,7 @@ class TeacherAttendanceController extends Controller
         if ($institute === '') {
             return view('teacher.attendance.index', [
                 'institute' => null,
+                'panel' => $this->panel(),
                 'students' => collect(),
                 'records' => collect(),
                 'search' => $search,
@@ -58,6 +59,7 @@ class TeacherAttendanceController extends Controller
 
         return view('teacher.attendance.index', [
             'institute' => $institute,
+            'panel' => $this->panel(),
             'students' => $students,
             'studentNameMap' => $studentNameMap,
             'records' => $records,
@@ -115,6 +117,7 @@ class TeacherAttendanceController extends Controller
             'students' => $students,
             'studentNameMap' => $studentNameMap,
             'institute' => $institute,
+            'panel' => $this->panel(),
         ]);
     }
 
@@ -144,7 +147,7 @@ class TeacherAttendanceController extends Controller
             'note' => $data['note'] ?? null,
         ]);
 
-        return redirect()->route('teacher.attendance.index')->with('success', 'Attendance updated.');
+            return redirect()->route($this->routeName('attendance.index'))->with('success', 'Attendance updated.');
     }
 
     public function destroy(Attendance $attendance): RedirectResponse
@@ -162,9 +165,13 @@ class TeacherAttendanceController extends Controller
 
     private function teacherInstitute(): string
     {
+        if ((Auth::user()?->role ?? '') === 'teacher_admin') {
+            return trim((string) (Auth::user()?->school ?? ''));
+        }
+
         $teacher = Teacher::query()->firstWhere('user_id', Auth::id());
 
-        return trim((string) ($teacher?->institution ?? ''));
+        return trim((string) ($teacher?->institution ?? Auth::user()?->school ?? ''));
     }
 
     private function studentBelongsToInstitute(string $studentUserId, string $institute): bool
@@ -188,5 +195,15 @@ class TeacherAttendanceController extends Controller
         $value = preg_replace('/\s+/', ' ', $value) ?? $value;
 
         return trim($value);
+    }
+
+    private function panel(): string
+    {
+        return (Auth::user()?->role ?? '') === 'teacher_admin' ? 'teacher-admin' : 'teacher';
+    }
+
+    private function routeName(string $name): string
+    {
+        return $this->panel().'.'.$name;
     }
 }

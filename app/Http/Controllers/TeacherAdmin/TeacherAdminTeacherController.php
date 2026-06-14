@@ -65,6 +65,17 @@ class TeacherAdminTeacherController extends Controller
         ]);
     }
 
+    public function show(Teacher $teacher): View
+    {
+        $this->ensureSchoolAccess($teacher->institution ?? null);
+
+        return view('teacher_admin.teachers.show', [
+            'teacher' => $teacher,
+            'user' => User::find($teacher->user_id),
+            'school' => $this->schoolName(),
+        ]);
+    }
+
     public function create(): View
     {
         return view('teacher_admin.teachers.form', [

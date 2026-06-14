@@ -44,7 +44,13 @@ Route::get('/dashboard', function (Request $request) {
         ? $portal
         : null;
 
-    $role = Auth::user()?->role ?? 'student';
+    $activeGuard = (string) $request->session()->get('active_guard', '');
+    $guard = in_array($activeGuard, ['admin', 'teacher_admin', 'teacher', 'student'], true)
+        ? $activeGuard
+        : collect(['admin', 'teacher_admin', 'teacher', 'student'])
+            ->first(fn (string $guard) => Auth::guard($guard)->check());
+
+    $role = $guard ? (Auth::guard($guard)->user()?->role ?? 'student') : 'student';
     $resolvedPortal = $portal ?? match ($role) {
         'teacher' => 'teacher',
         'teacher_admin' => 'teacher-admin',
@@ -142,6 +148,8 @@ Route::middleware(['auth:student', 'student'])->group(function () {
         ->name('student.reading-logs.store');
     Route::get('/student/payments', [SchoolPortalController::class, 'payments'])
         ->name('student.payments');
+    Route::post('/student/payments', [SchoolPortalController::class, 'submitPayment'])
+        ->name('student.payments.submit');
 });
 
 Route::middleware(['auth:teacher', 'teacher'])->group(function () {
@@ -212,10 +220,26 @@ Route::middleware(['auth:teacher', 'teacher'])->group(function () {
         ->name('teacher.progress.edit');
     Route::put('/teacher/student-progress/{student}', [TeacherStudentProgressController::class, 'update'])
         ->name('teacher.progress.update');
+    Route::delete('/teacher/student-progress/{student}', [TeacherStudentProgressController::class, 'destroy'])
+        ->name('teacher.progress.destroy');
     Route::post('/teacher/student-progress/{student}/exam-results', [TeacherStudentProgressController::class, 'storeExamResult'])
         ->name('teacher.progress.results.store');
     Route::delete('/teacher/student-progress/{student}/exam-results/{result}', [TeacherStudentProgressController::class, 'destroyExamResult'])
         ->name('teacher.progress.results.destroy');
+    Route::get('/teacher/students', [TeacherAdminStudentController::class, 'index'])
+        ->name('teacher.students.index');
+    Route::get('/teacher/students/create', [TeacherAdminStudentController::class, 'create'])
+        ->name('teacher.students.create');
+    Route::post('/teacher/students', [TeacherAdminStudentController::class, 'store'])
+        ->name('teacher.students.store');
+    Route::get('/teacher/students/{student}', [TeacherAdminStudentController::class, 'show'])
+        ->name('teacher.students.show');
+    Route::get('/teacher/students/{student}/edit', [TeacherAdminStudentController::class, 'edit'])
+        ->name('teacher.students.edit');
+    Route::put('/teacher/students/{student}', [TeacherAdminStudentController::class, 'update'])
+        ->name('teacher.students.update');
+    Route::delete('/teacher/students/{student}', [TeacherAdminStudentController::class, 'destroy'])
+        ->name('teacher.students.destroy');
     Route::get('/teacher/messages', [SchoolPortalController::class, 'messages'])
         ->name('teacher.messages');
     Route::post('/teacher/messages', [SchoolPortalController::class, 'sendMessage'])
@@ -251,6 +275,8 @@ Route::middleware(['auth:teacher_admin', 'teacher_admin'])->group(function () {
         ->name('teacher-admin.students.create');
     Route::post('/teacher-admin/students', [TeacherAdminStudentController::class, 'store'])
         ->name('teacher-admin.students.store');
+    Route::get('/teacher-admin/students/{student}', [TeacherAdminStudentController::class, 'show'])
+        ->name('teacher-admin.students.show');
     Route::get('/teacher-admin/students/{student}/edit', [TeacherAdminStudentController::class, 'edit'])
         ->name('teacher-admin.students.edit');
     Route::put('/teacher-admin/students/{student}', [TeacherAdminStudentController::class, 'update'])
@@ -264,6 +290,8 @@ Route::middleware(['auth:teacher_admin', 'teacher_admin'])->group(function () {
         ->name('teacher-admin.teachers.create');
     Route::post('/teacher-admin/teachers', [TeacherAdminTeacherController::class, 'store'])
         ->name('teacher-admin.teachers.store');
+    Route::get('/teacher-admin/teachers/{teacher}', [TeacherAdminTeacherController::class, 'show'])
+        ->name('teacher-admin.teachers.show');
     Route::get('/teacher-admin/teachers/{teacher}/edit', [TeacherAdminTeacherController::class, 'edit'])
         ->name('teacher-admin.teachers.edit');
     Route::put('/teacher-admin/teachers/{teacher}', [TeacherAdminTeacherController::class, 'update'])
@@ -273,6 +301,40 @@ Route::middleware(['auth:teacher_admin', 'teacher_admin'])->group(function () {
 
     Route::get('/teacher-admin/school-database', [TeacherAdminDashboardController::class, 'database'])
         ->name('teacher-admin.database');
+    Route::get('/teacher-admin/attendance', [TeacherAttendanceController::class, 'index'])
+        ->name('teacher-admin.attendance.index');
+    Route::post('/teacher-admin/attendance', [TeacherAttendanceController::class, 'store'])
+        ->name('teacher-admin.attendance.store');
+    Route::get('/teacher-admin/attendance/{attendance}/edit', [TeacherAttendanceController::class, 'edit'])
+        ->name('teacher-admin.attendance.edit');
+    Route::put('/teacher-admin/attendance/{attendance}', [TeacherAttendanceController::class, 'update'])
+        ->name('teacher-admin.attendance.update');
+    Route::delete('/teacher-admin/attendance/{attendance}', [TeacherAttendanceController::class, 'destroy'])
+        ->name('teacher-admin.attendance.destroy');
+    Route::get('/teacher-admin/notices', [TeacherNoticeController::class, 'index'])
+        ->name('teacher-admin.notices.index');
+    Route::post('/teacher-admin/notices', [TeacherNoticeController::class, 'store'])
+        ->name('teacher-admin.notices.store');
+    Route::get('/teacher-admin/notices/{notice}/edit', [TeacherNoticeController::class, 'edit'])
+        ->name('teacher-admin.notices.edit');
+    Route::put('/teacher-admin/notices/{notice}', [TeacherNoticeController::class, 'update'])
+        ->name('teacher-admin.notices.update');
+    Route::delete('/teacher-admin/notices/{notice}', [TeacherNoticeController::class, 'destroy'])
+        ->name('teacher-admin.notices.destroy');
+    Route::get('/teacher-admin/student-progress', [TeacherStudentProgressController::class, 'index'])
+        ->name('teacher-admin.progress.index');
+    Route::get('/teacher-admin/student-progress/{student}/edit', [TeacherStudentProgressController::class, 'edit'])
+        ->name('teacher-admin.progress.edit');
+    Route::put('/teacher-admin/student-progress/{student}', [TeacherStudentProgressController::class, 'update'])
+        ->name('teacher-admin.progress.update');
+    Route::delete('/teacher-admin/student-progress/{student}', [TeacherStudentProgressController::class, 'destroy'])
+        ->name('teacher-admin.progress.destroy');
+    Route::post('/teacher-admin/student-progress/{student}/exam-results', [TeacherStudentProgressController::class, 'storeExamResult'])
+        ->name('teacher-admin.progress.results.store');
+    Route::delete('/teacher-admin/student-progress/{student}/exam-results/{result}', [TeacherStudentProgressController::class, 'destroyExamResult'])
+        ->name('teacher-admin.progress.results.destroy');
+    Route::get('/teacher-admin/reading-logs', [SchoolPortalController::class, 'readingLogs'])
+        ->name('teacher-admin.reading-logs');
     Route::get('/teacher-admin/messages', [SchoolPortalController::class, 'messages'])
         ->name('teacher-admin.messages');
     Route::post('/teacher-admin/messages', [SchoolPortalController::class, 'sendMessage'])
@@ -293,6 +355,8 @@ Route::middleware(['auth:teacher_admin', 'teacher_admin'])->group(function () {
         ->name('teacher-admin.payments');
     Route::post('/teacher-admin/payments', [SchoolPortalController::class, 'storePayment'])
         ->name('teacher-admin.payments.store');
+    Route::patch('/teacher-admin/payments/{payment}/approve', [SchoolPortalController::class, 'approvePayment'])
+        ->name('teacher-admin.payments.approve');
     Route::get('/teacher-admin/search', [SchoolPortalController::class, 'headSearch'])
         ->name('teacher-admin.search');
     Route::get('/teacher-admin/new-logins', [SchoolPortalController::class, 'loginReviews'])

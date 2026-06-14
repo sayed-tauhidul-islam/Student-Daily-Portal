@@ -15,10 +15,12 @@ class Notice extends Model
         'teacher_user_id',
         'title',
         'body',
+        'attachments',
         'published_at',
     ];
 
     protected $casts = [
+        'attachments' => 'array',
         'published_at' => 'datetime',
     ];
 }

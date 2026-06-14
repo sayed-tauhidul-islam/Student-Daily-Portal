@@ -16,6 +16,18 @@
             </div>
 
             <div class="app-surface rounded-[2rem] p-4 sm:p-8">
+                <div class="max-w-3xl">
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] app-primary">Dashboard mood</p>
+                    <h3 class="mt-2 text-2xl font-black text-[color:var(--app-text)]">Choose your dashboard mood</h3>
+                    <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                        <button type="button" onclick="window.setDashboardTheme('default')" class="rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-left text-sm font-bold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">Retro</button>
+                        <button type="button" onclick="window.setDashboardTheme('light')" class="rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-left text-sm font-bold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">Light</button>
+                        <button type="button" onclick="window.setDashboardTheme('dark')" class="rounded-2xl border border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-4 py-3 text-left text-sm font-bold text-[color:var(--app-text)] transition hover:bg-[color:var(--app-soft)]">Dark</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-surface rounded-[2rem] p-4 sm:p-8">
                 <div class="max-w-2xl">
                     @include('profile.partials.update-password-form')
                 </div>

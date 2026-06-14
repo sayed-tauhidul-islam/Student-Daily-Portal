@@ -3,7 +3,7 @@
         <div>
             <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">Student</p>
             <h2 class="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">Teachers of My Institute</h2>
-            <p class="mt-2 text-sm text-slate-500">Only teachers from your own school/college are shown here.</p>
+            <p class="mt-2 text-sm text-slate-500">Teachers are matched from your school, area, and selected subjects.</p>
         </div>
     </x-slot>
 
@@ -16,6 +16,7 @@
             @else
                 <div class="mb-5 rounded-[1.75rem] border border-cyan-200/70 bg-gradient-to-r from-cyan-50 to-sky-50 px-5 py-4 text-sm text-slate-700">
                     <span class="font-semibold text-slate-900">Institute:</span> {{ $institute }}
+                    <span class="mt-1 block text-slate-600">{{ $matchSummary ?? '' }}</span>
                 </div>
 
                 <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -31,8 +32,10 @@
 
                             <div class="mt-4 space-y-2 text-sm text-slate-600">
                                 <p><span class="font-semibold text-slate-900">Subjects:</span> {{ implode(', ', $teacher->subjects ?? [$teacher->subject ?? '']) }}</p>
-                                <p><span class="font-semibold text-slate-900">Area:</span> {{ $teacher->area ?: '—' }}</p>
-                                <p><span class="font-semibold text-slate-900">Institute:</span> {{ $teacher->institution ?: '—' }}</p>
+                                <p><span class="font-semibold text-slate-900">Area:</span> {{ $teacher->area ?: '-' }}</p>
+                                <p><span class="font-semibold text-slate-900">Institute:</span> {{ $teacher->institution ?: '-' }}</p>
+                                <p><span class="font-semibold text-slate-900">Availability:</span> {{ $teacher->availability ?: 'Flexible' }}</p>
+                                <p><span class="font-semibold text-slate-900">Experience:</span> {{ $teacher->experience ?: 'Not added' }}</p>
                             </div>
 
                             <div class="mt-5 flex flex-wrap gap-2">
@@ -48,7 +51,7 @@
                         </article>
                     @empty
                         <div class="col-span-full rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
-                            No teachers found for your institute.
+                            No teachers matched your profile yet. Update your area and subjects, or ask your school admin to add teachers.
                         </div>
                     @endforelse
                 </div>

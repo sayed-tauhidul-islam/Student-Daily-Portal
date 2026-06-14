@@ -46,6 +46,26 @@ class AuthenticationTest extends TestCase
             ->assertRedirect(route('admin.dashboard', absolute: false));
     }
 
+    public function test_teacher_can_authenticate_when_stored_role_needs_normalization(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'sakibfoysal@gmail.com',
+            'role' => 'Teacher ',
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'portal' => 'teacher',
+        ]);
+
+        $this->assertAuthenticated('teacher');
+        $response->assertRedirect(route('dashboard', absolute: false));
+
+        $this->get('/dashboard')
+            ->assertRedirect(route('teacher.dashboard', absolute: false));
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();

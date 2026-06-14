@@ -1,4 +1,5 @@
 <x-app-layout>
+    @php($panel = request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher')
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
@@ -6,19 +7,31 @@
                 <h2 class="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">Track Student Progress</h2>
                 <p class="mt-2 text-sm text-slate-500">{{ $user?->name ?? 'Student' }} • Class {{ $student->class ?? '-' }}</p>
             </div>
-            <a href="{{ route('teacher.progress.index') }}" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Back</a>
+            <div class="flex flex-wrap gap-2">
+                @if($progress)
+                    <form method="POST" action="{{ route($panel.'.progress.destroy', $student) }}" data-confirm-delete>
+                        @csrf
+                        @method('DELETE')
+                        <button class="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700">Delete progress</button>
+                    </form>
+                @endif
+                <a href="{{ route($panel.'.progress.index') }}" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Back</a>
+            </div>
         </div>
     </x-slot>
 
     <div class="py-6">
-        <form method="POST" action="{{ route('teacher.progress.update', $student) }}" class="space-y-6 rounded-3xl border border-slate-200 bg-white p-6">
+        <form method="POST" action="{{ route($panel.'.progress.update', $student) }}" class="space-y-6 rounded-3xl border border-slate-200 bg-white p-6">
             @csrf
             @method('PUT')
 
             <div class="grid gap-4 md:grid-cols-3">
-                <div><label class="mb-1 block text-sm font-semibold">Overall Score</label><input name="overall_score" value="{{ old('overall_score', $progress->overall_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
-                <div><label class="mb-1 block text-sm font-semibold">Attendance Score</label><input name="attendance_score" value="{{ old('attendance_score', $progress->attendance_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
-                <div><label class="mb-1 block text-sm font-semibold">Behavior Score</label><input name="behavior_score" value="{{ old('behavior_score', $progress->behavior_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
+                <div><label class="mb-1 block text-sm font-semibold">Overall Score</label><input name="overall_score" type="number" min="0" max="100" step="0.1" value="{{ old('overall_score', $progress->overall_score ?? '') }}" placeholder="Auto if blank" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
+                <div><label class="mb-1 block text-sm font-semibold">Attendance Score</label><input name="attendance_score" type="number" min="0" max="100" step="0.1" value="{{ old('attendance_score', $progress->attendance_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
+                <div><label class="mb-1 block text-sm font-semibold">Reading Score</label><input name="reading_score" type="number" min="0" max="100" step="0.1" value="{{ old('reading_score', $progress->reading_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
+                <div><label class="mb-1 block text-sm font-semibold">Writing Score</label><input name="writing_score" type="number" min="0" max="100" step="0.1" value="{{ old('writing_score', $progress->writing_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
+                <div><label class="mb-1 block text-sm font-semibold">Assignment Score</label><input name="assignment_score" type="number" min="0" max="100" step="0.1" value="{{ old('assignment_score', $progress->assignment_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
+                <div><label class="mb-1 block text-sm font-semibold">Behavior Score</label><input name="behavior_score" type="number" min="0" max="100" step="0.1" value="{{ old('behavior_score', $progress->behavior_score ?? '') }}" class="w-full rounded-xl border border-slate-200 px-3 py-2"></div>
             </div>
 
             <div class="grid gap-4 md:grid-cols-2">
@@ -54,7 +67,7 @@
 
         <div class="mt-6 rounded-3xl border border-slate-200 bg-white p-6">
             <h3 class="text-lg font-bold text-slate-900">Exam Result Analytics Input</h3>
-            <form method="POST" action="{{ route('teacher.progress.results.store', $student) }}" class="mt-3 grid gap-2 md:grid-cols-8">
+            <form method="POST" action="{{ route($panel.'.progress.results.store', $student) }}" class="mt-3 grid gap-2 md:grid-cols-8">
                 @csrf
                 <input name="exam_name" placeholder="Exam" class="rounded-xl border border-slate-200 px-3 py-2 text-sm md:col-span-2">
                 <input name="term_name" placeholder="Term" class="rounded-xl border border-slate-200 px-3 py-2 text-sm">
@@ -72,7 +85,7 @@
                     <tbody>
                         @forelse($examResults as $result)
                             @php $p = round(((float) $result->marks / max((float) $result->out_of,1))*100,1); @endphp
-                            <tr class="border-t"><td class="px-3 py-2">{{ $result->exam_name }} {{ $result->term_name }}</td><td class="px-3 py-2">{{ $result->subject }}</td><td class="px-3 py-2">{{ $result->marks }}/{{ $result->out_of }}</td><td class="px-3 py-2">{{ $p }}%</td><td class="px-3 py-2">{{ optional($result->exam_date)->format('d M Y') }}</td><td class="px-3 py-2"><form method="POST" action="{{ route('teacher.progress.results.destroy', [$student, $result]) }}" data-confirm-delete>@csrf @method('DELETE')<button class="rounded bg-rose-100 px-2 py-1 text-[10px] font-bold text-rose-700">Delete</button></form></td></tr>
+                            <tr class="border-t"><td class="px-3 py-2">{{ $result->exam_name }} {{ $result->term_name }}</td><td class="px-3 py-2">{{ $result->subject }}</td><td class="px-3 py-2">{{ $result->marks }}/{{ $result->out_of }}</td><td class="px-3 py-2">{{ $p }}%</td><td class="px-3 py-2">{{ optional($result->exam_date)->format('d M Y') }}</td><td class="px-3 py-2"><form method="POST" action="{{ route($panel.'.progress.results.destroy', [$student, $result]) }}" data-confirm-delete>@csrf @method('DELETE')<button class="rounded bg-rose-100 px-2 py-1 text-[10px] font-bold text-rose-700">Delete</button></form></td></tr>
                         @empty
                             <tr><td colspan="6" class="px-3 py-4 text-center text-slate-500">No exam result added yet.</td></tr>
                         @endforelse

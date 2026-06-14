@@ -83,16 +83,68 @@ class StudentProfileController extends Controller
             'user_id' => Auth::id(),
         ], [
             'class' => $data['class'],
-            'group' => $data['group'] ?? null,
+            'group' => $this->classUsesGroup((string) $data['class']) ? ($data['group'] ?? null) : null,
             'school' => $data['school'],
             'subject' => implode(', ', $data['subjects']),
             'subjects' => array_values($data['subjects']),
-            'preferred_teacher' => $data['preferred_teacher'] ?? null,
+            'preferred_teacher' => $this->teacherBelongsToSchool((string) ($data['preferred_teacher'] ?? ''), (string) $data['school'])
+                ? $data['preferred_teacher']
+                : null,
             'area' => $data['area'],
             'phone' => $data['phone'] ?? null,
             'bio' => $data['bio'] ?? null,
         ]);
 
         return redirect()->route('student.dashboard')->with('success', 'Profile saved successfully!');
+    }
+
+    private function teacherBelongsToSchool(string $teacherValue, string $school): bool
+    {
+        $teacherValue = trim($teacherValue);
+        $school = trim($school);
+
+        if ($teacherValue === '') {
+            return true;
+        }
+
+        if ($school === '') {
+            return false;
+        }
+
+        return Teacher::query()
+            ->where('name', $this->teacherNameFromValue($teacherValue))
+            ->get()
+            ->contains(fn (Teacher $teacher) => $this->sameInstitute((string) ($teacher->institution ?? ''), $school));
+    }
+
+    private function classUsesGroup(string $class): bool
+    {
+        preg_match('/\d+/', $class, $matches);
+        $number = isset($matches[0]) ? (int) $matches[0] : null;
+
+        return $number === null || $number < 1 || $number > 8;
+    }
+
+    private function teacherNameFromValue(string $teacherValue): string
+    {
+        return trim((string) preg_replace('/\s+\([^)]*\)$/', '', $teacherValue));
+    }
+
+    private function sameInstitute(string $left, string $right): bool
+    {
+        $left = $this->normalize($left);
+        $right = $this->normalize($right);
+
+        return $left !== '' && $right !== '' && ($left === $right || str_contains($left, $right) || str_contains($right, $left));
+    }
+
+    private function normalize(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = str_replace('&', ' and ', $value);
+        $value = preg_replace('/[^a-z0-9\s]/', ' ', $value) ?? $value;
+        $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+
+        return trim($value);
     }
 }

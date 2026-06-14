@@ -57,7 +57,7 @@ class TeacherAdminDashboardController extends Controller
                 return $school === '' ? false : $this->belongsToSchool((string) ($teacher->institution ?? ''), $school);
             })->values();
 
-        $userIds = $students->pluck('user_id')
+        $userIds = collect($students->pluck('user_id'))
             ->merge($teachers->pluck('user_id'))
             ->filter()
             ->unique()

@@ -681,7 +681,7 @@
   window.togglePw = togglePw;
   window.handleStudentClassChange = handleStudentClassChange;
 
-  switchRole('student');
+  switchRole('{{ $selectedRole }}');
   handleStudentClassChange();
 })();
 </script>

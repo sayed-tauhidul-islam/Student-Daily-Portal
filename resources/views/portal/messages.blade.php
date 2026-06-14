@@ -10,9 +10,20 @@
     <div class="grid gap-6 lg:grid-cols-[0.35fr_0.65fr]">
         <aside class="app-surface rounded-2xl p-4">
             <h3 class="text-lg font-black">Contacts</h3>
+            <form method="GET" action="{{ request()->url() }}" class="mt-3 flex gap-2">
+                @if($receiver)
+                    <input type="hidden" name="with" value="{{ $receiver->getKey() }}">
+                @endif
+                <input name="q" value="{{ $search ?? '' }}" placeholder="Search people..." class="min-w-0 flex-1 rounded-xl border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] px-3 py-2 text-sm text-[color:var(--app-text)]">
+                <button type="submit" class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--app-primary)] text-white" aria-label="Search contacts">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+                    </svg>
+                </button>
+            </form>
             <div class="mt-3 space-y-2 max-h-[34rem] overflow-auto pr-1">
                 @forelse($contacts as $contact)
-                    <a href="{{ request()->url() . '?with=' . $contact->getKey() }}" class="block rounded-xl border px-3 py-3 {{ $receiver && (string) $receiver->getKey() === (string) $contact->getKey() ? 'border-[color:var(--app-primary)] bg-[color:var(--app-soft)]' : 'border-[color:var(--app-border)]' }}">
+                    <a href="{{ request()->url() . '?with=' . $contact->getKey() . (!empty($search) ? '&q=' . urlencode($search) : '') }}" class="block rounded-xl border px-3 py-3 {{ $receiver && (string) $receiver->getKey() === (string) $contact->getKey() ? 'border-[color:var(--app-primary)] bg-[color:var(--app-soft)]' : 'border-[color:var(--app-border)]' }}">
                         <p class="font-semibold">{{ $contact->name }}</p>
                         <p class="text-xs app-muted">{{ ucfirst(str_replace('_', ' ', $contact->role ?? 'user')) }}</p>
                     </a>
@@ -67,6 +78,7 @@
                             $mine = (string) $message->sender_id === $viewerId;
                             $canEdit = $mine && !empty($message->deleted_for_everyone_at) === false;
                             $canDeleteForMe = $mine || (string) $message->receiver_id === $viewerId;
+                            $sentAt = $message->created_at?->copy()->timezone(config('app.timezone'));
                         @endphp
                         <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" x-data="{ editing: false, draft: @js($message->body) }" x-on:open-edit.window="if($event.detail === '{{ $message->getKey() }}') editing = true">
                             <div class="max-w-[85%] rounded-2xl px-4 py-3 {{ $mine ? 'bg-[color:var(--app-primary)] text-white' : 'bg-[color:var(--app-soft)] text-[color:var(--app-text)]' }}">
@@ -110,7 +122,7 @@
                                     @endif
                                 </div>
 
-                                <p class="mt-2 text-[10px] {{ $mine ? 'text-white/80' : 'app-muted' }}">{{ optional($message->created_at)->format('d M Y, h:i A') }}</p>
+                                <p class="mt-2 text-[10px] {{ $mine ? 'text-white/80' : 'app-muted' }}">{{ optional($sentAt)->format('d M Y, h:i A') }}</p>
                             </div>
                         </div>
                     @empty

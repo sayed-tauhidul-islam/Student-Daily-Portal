@@ -107,6 +107,7 @@
                                     <td class="px-6 py-5">{{ $teacher->area ?? '—' }}</td>
                                     <td class="px-6 py-5">
                                         <div class="flex flex-wrap gap-2">
+                                            <a href="{{ route('teacher-admin.teachers.show', $teacher) }}" class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">View</a>
                                             <a href="{{ route('teacher-admin.teachers.edit', $teacher) }}" class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100">Edit</a>
                                             <form method="POST" action="{{ route('teacher-admin.teachers.destroy', $teacher) }}" data-confirm-delete>
                                                 @csrf

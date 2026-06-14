@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\PortalNotificationFeed;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -22,7 +23,10 @@ class NotificationController extends Controller
             $notifications = new LengthAwarePaginator(collect(), 0, 20);
         }
 
-        return view('notifications.index', compact('notifications'));
+        $portalFeed = PortalNotificationFeed::forUser($user, 50);
+        PortalNotificationFeed::markSeen($user, $portalFeed);
+
+        return view('notifications.index', compact('notifications', 'portalFeed'));
     }
 
     public function markRead(Request $request, $id)
@@ -44,4 +48,5 @@ class NotificationController extends Controller
 
         return back();
     }
+
 }

@@ -21,10 +21,21 @@ class TeacherMiddleware
 
         $user = Auth::guard('teacher')->user();
 
-        if (! $user || ($user->role ?? '') !== 'teacher') {
+        if (! $user || $this->normalizeRole((string) ($user->role ?? $user->getRawOriginal('role') ?? '')) !== 'teacher') {
             abort(403, 'Teacher access required.');
         }
 
         return $next($request);
+    }
+
+    private function normalizeRole(string $role): string
+    {
+        $role = strtolower(trim($role));
+        $role = preg_replace('/[\s-]+/', '_', $role) ?? $role;
+
+        return match ($role) {
+            'teacherpanel', 'teacher_panel', 'tutor', 'instructor', 'faculty' => 'teacher',
+            default => $role,
+        };
     }
 }

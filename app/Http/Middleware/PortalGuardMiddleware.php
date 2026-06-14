@@ -29,7 +29,7 @@ class PortalGuardMiddleware
         $guard = $this->resolveGuard($request);
 
         if (! $guard) {
-            return redirect()->route('login');
+            return redirect()->route('login', ['portal' => $request->query('portal', 'student')]);
         }
 
         Auth::shouldUse($guard);

@@ -28,6 +28,15 @@
                                 </span>
                             </div>
                             <p class="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">{{ $notice->body }}</p>
+                            @if(!empty($notice->attachments))
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    @foreach($notice->attachments as $attachment)
+                                        <a href="{{ $attachment['url'] ?? \Illuminate\Support\Facades\Storage::disk('public')->url($attachment['path'] ?? '') }}" target="_blank" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700">
+                                            {{ $attachment['name'] ?? 'Attachment' }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
                         </article>
                     @empty
                         <div class="rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">

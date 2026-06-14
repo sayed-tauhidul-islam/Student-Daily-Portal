@@ -1,9 +1,7 @@
 <x-app-layout>
     @php
         $user = Auth::user();
-        $avatarUrl = $user?->image_url;
         $selectedSubjects = $profile?->subjects ?: array_values(array_filter(array_map('trim', explode(',', (string) ($profile->subject ?? '')))));
-        $hasAverageRating = ! empty($averageRating) && $averageRating > 0;
     @endphp
 
     <x-slot name="header">
@@ -20,47 +18,14 @@
     <div class="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.12),_transparent_30%),radial-gradient(circle_at_right_bottom,_rgba(99,102,241,0.10),_transparent_25%),linear-gradient(180deg,_#f8fbff_0%,_#eef4fb_100%)] py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <section class="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-8">
-                <div class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.32em] text-sky-600">Tutor workspace</p>
-                        <h3 class="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Welcome back, {{ $user?->name ?? 'Teacher' }}</h3>
-                        <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">Keep your teaching profile current, respond to new tuition requests, and monitor how your profile performs across the platform.</p>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.32em] text-sky-600">Tutor workspace</p>
+                    <h3 class="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Welcome back, {{ $user?->name ?? 'Teacher' }}</h3>
+                    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">Keep your teaching profile current, respond to new tuition requests, and monitor how your profile performs across the platform.</p>
 
-                        <div class="mt-6 flex flex-wrap gap-3">
-                            <a href="{{ route('teacher.profile.create') }}" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">Edit profile</a>
-                            <a href="{{ route('teacher.posts.create') }}" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Post</a>
-                        </div>
-                    </div>
-
-                    <div class="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-                        <div class="flex items-center gap-4">
-                            <a href="{{ route('teacher.profile.create') }}" class="relative block h-20 w-20 overflow-hidden rounded-[1.5rem] bg-slate-900 text-3xl font-black text-white ring-4 ring-white shadow-[0_14px_30px_rgba(15,23,42,0.18)]">
-                                @if ($avatarUrl)
-                                    <img src="{{ $avatarUrl }}" alt="{{ $user?->name }}" class="h-full w-full object-cover">
-                                @else
-                                    <div class="h-full w-full flex items-center justify-center">{{ strtoupper(substr($user?->name ?? 'T', 0, 1)) }}</div>
-                                @endif
-                            </a>
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Profile</p>
-                                <p class="text-lg font-bold text-slate-950">{{ $profile ? 'Published' : 'Needs setup' }}</p>
-                                <p class="text-sm text-slate-500">{{ $profile?->area ?? 'Add your area and bio in Settings' }}</p>
-                            </div>
-                        </div>
-
-                        <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                            <div class="rounded-2xl bg-white px-4 py-3">
-                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Requests</p>
-                                <p class="mt-1 text-2xl font-black text-slate-950">{{ $requestCount }}</p>
-                            </div>
-                            <div class="rounded-2xl bg-white px-4 py-3">
-                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Average rating</p>
-                                <div class="mt-1 flex items-end gap-2">
-                                    <p class="text-2xl font-black text-slate-950">{{ $hasAverageRating ? number_format($averageRating, 1) : '—' }}</p>
-                                    <span class="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-700">{{ $ratingCount }} reviews</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <a href="{{ route('teacher.profile.create') }}" class="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">Edit profile</a>
+                        <a href="{{ route('teacher.posts.create') }}" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Post</a>
                     </div>
                 </div>
 

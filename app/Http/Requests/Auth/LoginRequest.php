@@ -3,11 +3,9 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\BlockedIdentity;
-use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -87,16 +85,14 @@ class LoginRequest extends FormRequest
                 continue;
             }
 
-            // Check if user's role matches one of the priority roles
-            $userRole = (string) ($user->role ?? 'student');
-            if ($userRole !== $role && ! in_array($userRole, $this->rolePriorityForPortal($portal))) {
+            $userRole = $this->normalizeRole((string) ($user->getRawOriginal('role') ?? $user->role ?? 'student'));
+            if ($userRole !== $role) {
                 Auth::guard($guard)->logout();
                 continue;
             }
 
             if ((string) ($user->status ?? '') === 'blocked') {
                 Auth::guard($guard)->logout();
-                RateLimiter::hit($this->throttleKey());
 
                 throw ValidationException::withMessages([
                     'email' => 'This account is blocked by your school authority.',
@@ -110,7 +106,6 @@ class LoginRequest extends FormRequest
 
             if ($blockedIdentity) {
                 Auth::guard($guard)->logout();
-                RateLimiter::hit($this->throttleKey());
 
                 throw ValidationException::withMessages([
                     'email' => 'You are blocked from this school. Please contact the head authority.',
@@ -118,14 +113,10 @@ class LoginRequest extends FormRequest
             }
 
             $this->attributes->set('authenticated_guard', $guard);
-            $this->attributes->set('authenticated_role', (string) ($user->role ?? $role));
-
-            RateLimiter::clear($this->throttleKey());
+            $this->attributes->set('authenticated_role', $userRole);
 
             return;
         }
-
-        RateLimiter::hit($this->throttleKey());
 
         throw ValidationException::withMessages([
             'email' => trans('auth.failed'),
@@ -139,20 +130,7 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
-            return;
-        }
-
-        event(new Lockout($this));
-
-        $seconds = RateLimiter::availableIn($this->throttleKey());
-
-        throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
+        return;
     }
 
     /**
@@ -161,6 +139,11 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return route('login', ['portal' => $this->portal()]);
     }
 
     public function portal(): string
@@ -189,6 +172,19 @@ class LoginRequest extends FormRequest
             'admin' => 'admin',
             'super_admin' => 'admin',
             default => null,
+        };
+    }
+
+    private function normalizeRole(string $role): string
+    {
+        $role = strtolower(trim($role));
+        $role = preg_replace('/[\s-]+/', '_', $role) ?? $role;
+
+        return match ($role) {
+            'teacheradmin', 'teacher_admin', 'head_teacher', 'headteacher' => 'teacher_admin',
+            'superadmin', 'super_admin' => 'super_admin',
+            'teacherpanel', 'teacher_panel', 'tutor', 'instructor', 'faculty' => 'teacher',
+            default => str_contains($role, 'teacher') ? 'teacher' : $role,
         };
     }
 }

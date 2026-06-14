@@ -369,18 +369,6 @@
                 .dashboard-sidebar { width: 100%; height: auto; position: static; border-right: 0; }
             }
 
-            body[data-role="student"] .dashboard-layout {
-                display: block;
-            }
-
-            body[data-role="student"] .dashboard-sidebar {
-                display: none;
-            }
-
-            body[data-role="student"] .dashboard-workspace {
-                width: 100%;
-            }
-
             body[data-role="student"] .dashboard-workspace,
             body[data-role="teacher"] .dashboard-workspace,
             body[data-role="teacher_admin"] .dashboard-workspace {
@@ -482,9 +470,7 @@
         @endif
 
         <div x-data="{ menuOpen: false }" @keydown.escape.window="menuOpen = false" class="dashboard-shell dashboard-layout">
-            @unless($isStudentRole)
-                @include('layouts.navigation')
-            @endunless
+            @include('layouts.navigation')
             <div class="dashboard-workspace">
                 <div class="topbar-shell">
                     <div class="flex items-center gap-2">
@@ -526,44 +512,6 @@
                         </form>
                     </div>
                 </div>
-
-                @if($isStudentRole)
-                    <div x-show="menuOpen" x-cloak class="fixed inset-0 z-[55]">
-                        <div class="absolute inset-0 bg-slate-950/65 backdrop-blur-sm" @click="menuOpen = false"></div>
-                        <div class="absolute left-0 top-0 h-full w-[min(22rem,88vw)] overflow-y-auto border-r border-[color:var(--app-border)] bg-[color:var(--app-surface-solid)] shadow-[0_30px_80px_rgba(15,23,42,0.32)]">
-                            <div class="flex items-center justify-between border-b border-[color:var(--app-border)] px-5 py-4">
-                                <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.28em] app-accent">Menu</p>
-                                    <p class="text-lg font-black">TutorLink BD</p>
-                                </div>
-                                <button type="button" @click="menuOpen = false" class="topbar-icon-btn" aria-label="Close menu">
-                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div class="p-4">
-                                <div class="rounded-[1.5rem] border border-[color:var(--app-border)] bg-[color:var(--app-soft)]/30 p-4">
-                                    <p class="text-xs font-semibold uppercase tracking-[0.24em] app-muted">Quick Links</p>
-                                    <p class="mt-1 text-sm app-muted">All portal tools are inside this menu.</p>
-                                </div>
-
-                                <div class="mt-4 space-y-2">
-                                    @if ($currentUser?->role === 'student')
-                                        @include('layouts.partials.nav-links-student-responsive')
-                                    @elseif ($currentUser?->role === 'teacher')
-                                        @include('layouts.partials.nav-links-teacher-responsive')
-                                    @elseif ($currentUser?->role === 'teacher_admin')
-                                        @include('layouts.partials.nav-links-teacher-admin-responsive')
-                                    @else
-                                        <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">{{ __('Home') }}</x-responsive-nav-link>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
 
                 @isset($header)
                     <header class="border-b border-[color:var(--app-border)] bg-[color:var(--app-surface)] backdrop-blur-xl">

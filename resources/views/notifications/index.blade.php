@@ -8,6 +8,31 @@
     </x-slot>
 
     <section class="app-surface rounded-2xl p-5">
+        @if(($portalFeed ?? collect())->isNotEmpty())
+            <div class="mb-6">
+                <h3 class="text-lg font-black text-[color:var(--app-text)]">Portal History</h3>
+                <div class="mt-3 space-y-3">
+                    @foreach($portalFeed as $item)
+                        <article class="rounded-2xl border border-[color:var(--app-border)] p-4">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <p class="font-bold">{{ $item['title'] }}</p>
+                                        @unless($item['seen'])
+                                            <span class="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-700">New</span>
+                                        @endunless
+                                    </div>
+                                    <p class="mt-1 text-sm app-muted">{{ \Illuminate\Support\Str::limit($item['body'], 140) }}</p>
+                                    <a href="{{ $item['url'] }}" class="mt-2 inline-block text-xs font-semibold app-primary">Open related page</a>
+                                </div>
+                                <p class="text-xs app-muted">{{ $item['created_at'] ? \Illuminate\Support\Carbon::parse($item['created_at'])->format('d M Y h:i A') : '' }}</p>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <div class="space-y-3">
             @forelse($notifications as $note)
                 <div class="rounded-2xl border p-4 {{ $note->read_at ? 'border-[color:var(--app-border)]' : 'border-sky-300 bg-sky-50/20' }}">

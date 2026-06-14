@@ -10,6 +10,18 @@
 <x-nav-link :href="route('teacher-admin.database')" :active="request()->routeIs('teacher-admin.database')">
     {{ __('School Database') }}
 </x-nav-link>
+<x-nav-link :href="route('teacher-admin.attendance.index')" :active="request()->routeIs('teacher-admin.attendance.*')">
+    {{ __('Attendance') }}
+</x-nav-link>
+<x-nav-link :href="route('teacher-admin.notices.index')" :active="request()->routeIs('teacher-admin.notices.*')">
+    {{ __('Notices') }}
+</x-nav-link>
+<x-nav-link :href="route('teacher-admin.progress.index')" :active="request()->routeIs('teacher-admin.progress.*')">
+    {{ __('Progress') }}
+</x-nav-link>
+<x-nav-link :href="route('teacher-admin.reading-logs')" :active="request()->routeIs('teacher-admin.reading-logs*')">
+    {{ __('Reading Logs') }}
+</x-nav-link>
 <x-nav-link :href="route('teacher-admin.messages')" :active="request()->routeIs('teacher-admin.messages*')">
     {{ __('Messenger') }}
 </x-nav-link>

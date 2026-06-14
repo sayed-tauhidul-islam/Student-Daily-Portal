@@ -7,6 +7,7 @@ use App\Models\LeaveApplication;
 use App\Models\LoginReview;
 use App\Models\PaymentConfirmation;
 use App\Models\Student;
+use App\Models\StudentProgress;
 use App\Models\Teacher;
 use App\Models\User;
 use Tests\TestCase;
@@ -255,5 +256,106 @@ class HeadTeacherPanelTest extends TestCase
         $this->assertSame('Rupsha', $student->area);
         $this->assertSame(['Bangla'], $student->subjects);
         $this->assertNull($student->user_id);
+    }
+
+    public function test_head_teacher_can_update_only_own_school_student_progress(): void
+    {
+        $school = 'Khulna Model School';
+        $headTeacher = User::factory()->create([
+            'role' => 'teacher_admin',
+            'school' => $school,
+        ]);
+        $studentUser = User::factory()->create([
+            'role' => 'student',
+            'school' => $school,
+        ]);
+        $student = Student::query()->create([
+            'user_id' => (string) $studentUser->getKey(),
+            'class' => 'Nine',
+            'school' => $school,
+            'area' => 'Khulna',
+        ]);
+        $otherStudent = Student::query()->create([
+            'class' => 'Ten',
+            'school' => 'Other School',
+            'area' => 'Dhaka',
+        ]);
+
+        $this->actingAs($headTeacher, 'teacher_admin');
+
+        $this->put(route('teacher-admin.progress.update', $student), [
+            'attendance_score' => 90,
+            'reading_score' => 80,
+            'writing_score' => 70,
+            'teacher_comment' => 'Improving well.',
+            'subject_names' => ['Math'],
+            'subject_scores' => [88],
+            'subject_comments' => ['Strong'],
+        ])->assertRedirect(route('teacher-admin.progress.index'));
+
+        $this->assertNotNull(StudentProgress::query()->firstWhere('student_user_id', (string) $studentUser->getKey()));
+
+        $this->put(route('teacher-admin.progress.update', $otherStudent), [
+            'overall_score' => 95,
+        ])->assertForbidden();
+    }
+
+    public function test_teacher_can_manage_only_students_from_their_own_school(): void
+    {
+        $school = 'Khulna Model School';
+        $teacherUser = User::factory()->create([
+            'role' => 'teacher',
+            'school' => $school,
+        ]);
+        Teacher::query()->create([
+            'user_id' => (string) $teacherUser->getKey(),
+            'name' => $teacherUser->name,
+            'institution' => $school,
+            'area' => 'Khulna',
+        ]);
+        $studentUser = User::factory()->create([
+            'role' => 'student',
+            'school' => $school,
+            'name' => 'Old Student',
+        ]);
+        $student = Student::query()->create([
+            'user_id' => (string) $studentUser->getKey(),
+            'class' => 'Eight',
+            'school' => $school,
+            'area' => 'Khulna',
+        ]);
+        $otherStudent = Student::query()->create([
+            'class' => 'Ten',
+            'school' => 'Other School',
+            'area' => 'Dhaka',
+        ]);
+
+        $this->actingAs($teacherUser, 'teacher');
+
+        $this->put(route('teacher.students.update', $student), [
+            'name' => 'Updated Student',
+            'email' => 'updated.student.teacher@example.test',
+            'class' => 'Nine',
+            'group' => 'Science',
+            'subject' => 'Math',
+            'preferred_teacher' => '',
+            'area' => 'Boyra',
+            'phone' => '01999999999',
+            'bio' => 'Updated by school teacher.',
+        ])->assertRedirect(route('teacher.students.index'));
+
+        $student->refresh();
+        $studentUser->refresh();
+
+        $this->assertSame('Nine', $student->class);
+        $this->assertSame($school, $student->school);
+        $this->assertSame($school, $studentUser->school);
+
+        $this->put(route('teacher.students.update', $otherStudent), [
+            'name' => 'Blocked Student',
+            'email' => '',
+            'class' => 'Nine',
+            'area' => 'Dhaka',
+        ])->assertForbidden();
     }
 }

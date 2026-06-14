@@ -15,6 +15,43 @@
         </div>
 
         <section class="rounded-3xl border border-slate-200 bg-white p-5">
+            <div class="grid gap-6 lg:grid-cols-[0.36fr_0.64fr] lg:items-center">
+                <div class="flex flex-col items-center">
+                    <div class="grid h-52 w-52 place-items-center rounded-full shadow-[inset_0_0_0_16px_rgba(255,255,255,0.45)]" style="background: conic-gradient({{ $progressChartGradient }});">
+                        <div class="grid h-36 w-36 place-items-center rounded-full bg-[color:var(--app-surface-solid)] text-center">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Progress</p>
+                                <p class="text-4xl font-black text-slate-900">{{ $combinedProgress }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-900">School Performance Overview</h3>
+                    <p class="mt-1 text-sm text-slate-500">Scores from attendance, reading, writing, assignments, behaviour, and exam results are converted to percentage.</p>
+                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                        @forelse($progressBreakdown as $item)
+                            <div class="rounded-2xl border border-slate-200 p-3">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="h-3 w-3 rounded-full" style="background: {{ $item['color'] }}"></span>
+                                        <span class="text-sm font-semibold text-slate-900">{{ $item['label'] }}</span>
+                                    </div>
+                                    <span class="text-sm font-black text-slate-900">{{ $item['score'] }}%</span>
+                                </div>
+                                <div class="mt-2 h-2 rounded bg-slate-200">
+                                    <div class="h-2 rounded" style="width: {{ min(100, max(0, $item['score'])) }}%; background: {{ $item['color'] }}"></div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-500 sm:col-span-2">No teacher progress marks yet.</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="rounded-3xl border border-slate-200 bg-white p-5">
             <h3 class="text-xl font-black text-slate-900">Exam Result Analytics Chart</h3>
             <p class="mt-1 text-sm text-slate-500">Teacher manually added exam results from school assessments.</p>
             <div class="mt-4 grid gap-4 md:grid-cols-3">
@@ -139,7 +176,7 @@
                 <h3 class="text-xl font-black text-slate-900">Manual Progress Insight</h3>
                 <p class="mt-2 text-sm text-slate-500">Teacher updates this section manually based on your school study performance.</p>
                 <div class="mt-4 space-y-2">
-                    <div class="rounded-2xl bg-slate-50 p-3"><p class="text-xs text-slate-500">Overall score</p><p class="text-2xl font-black text-slate-900">{{ (int) ($progress->overall_score ?? 0) }}%</p></div>
+                    <div class="rounded-2xl bg-slate-50 p-3"><p class="text-xs text-slate-500">Overall score</p><p class="text-2xl font-black text-slate-900">{{ $combinedProgress }}%</p></div>
                     <div class="rounded-2xl bg-slate-50 p-3"><p class="text-xs text-slate-500">Best subject</p><p class="text-sm font-bold text-emerald-700">{{ $bestSubject['name'] ?? 'N/A' }} @if($bestSubject) ({{ $bestSubject['score'] }}%) @endif</p></div>
                     <div class="rounded-2xl bg-slate-50 p-3"><p class="text-xs text-slate-500">Needs focus</p><p class="text-sm font-bold text-rose-700">{{ $weakSubject['name'] ?? 'N/A' }} @if($weakSubject) ({{ $weakSubject['score'] }}%) @endif</p></div>
                     <div class="rounded-2xl bg-slate-50 p-3"><p class="text-xs text-slate-500">Motivation note</p><p class="text-sm text-slate-700">{{ $progress->motivation_note ?? 'Keep going, ask your teacher to update progress details.' }}</p></div>
@@ -189,7 +226,7 @@
                         Resource hub: Build a daily revision list for {{ $class !== '' ? 'Class '.$class : 'your class' }} based on weak subjects, previous homework, and teacher feedback.
                     </div>
                     <div class="rounded-2xl bg-emerald-50 p-3 text-xs text-emerald-800">
-                        Parent Snapshot: Overall {{ (int) ($progress->overall_score ?? 0) }}%, Attendance {{ (int) ($progress->attendance_score ?? 0) }}%, Focus subject: {{ $weakSubject['name'] ?? 'N/A' }}.
+                        Parent Snapshot: Overall {{ $combinedProgress }}%, Attendance {{ (int) ($progress->attendance_score ?? 0) }}%, Focus subject: {{ $weakSubject['name'] ?? 'N/A' }}.
                     </div>
                 </div>
             </section>

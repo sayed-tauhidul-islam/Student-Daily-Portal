@@ -3,11 +3,18 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
+use App\Models\Notice;
 use App\Models\School;
 use App\Models\Student;
+use App\Models\StudentAssignment;
+use App\Models\StudentExamResult;
+use App\Models\StudentProgress;
 use App\Models\Teacher;
 use App\Models\TeacherPost;
 use App\Models\PaymentConfirmation;
+use App\Support\TeacherMatcher;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -19,7 +26,11 @@ class StudentDashboardController extends Controller
         $profile = Student::where('user_id', Auth::id())->first();
         $teachers = Teacher::query()->get();
 
-        $profileFields = ['class', 'group', 'school', 'subject', 'subjects', 'area', 'bio', 'phone'];
+        $profileFields = ['class', 'school', 'subject', 'subjects', 'area', 'bio', 'phone'];
+
+        if ($this->classUsesGroup((string) ($profile?->class ?? ''))) {
+            $profileFields[] = 'group';
+        }
         $filledFields = 0;
 
         if ($profile) {
@@ -40,43 +51,16 @@ class StudentDashboardController extends Controller
             ? array_values(array_filter($profileFields, fn ($field) => $field === 'subjects' ? empty($profile->subjects ?? []) : empty($profile->{$field})))
             : $profileFields;
 
-        $selectedSubjects = $profile?->subjects ?: array_values(array_filter(array_map('trim', explode(',', (string) ($profile->subject ?? '')))));
+        $selectedSubjects = TeacherMatcher::studentSubjects($profile)->all();
         $schoolRecord = $profile && $profile->school
             ? School::query()->where('name', $profile->school)->first()
             : null;
         $schoolRating = $schoolRecord->rating ?? null;
-        $teacherCount = 0;
-        if (! empty($profile?->school)) {
-            $studentInstitute = (string) $profile->school;
-            $teacherCount = $teachers->filter(function ($teacher) use ($studentInstitute) {
-                return $this->institutesMatch((string) ($teacher->institution ?? ''), $studentInstitute);
-            })->count();
-        }
-        $teacherMatches = $teachers->filter(function ($teacher) use ($profile, $selectedSubjects) {
-            $areaMatch = ! $profile || empty($profile->area)
-                ? true
-                : str_contains(strtolower((string) ($teacher->area ?? '')), strtolower((string) $profile->area));
-
-            if (! $areaMatch) {
-                return false;
-            }
-
-            if (empty($selectedSubjects)) {
-                return true;
-            }
-
-            $teacherSubjects = collect($teacher->subjects ?? [$teacher->subject ?? ''])
-                ->filter()
-                ->map(fn ($subject) => strtolower((string) $subject));
-
-            foreach ($selectedSubjects as $subject) {
-                if ($teacherSubjects->contains(fn ($teacherSubject) => str_contains($teacherSubject, strtolower($subject)))) {
-                    return true;
-                }
-            }
-
-            return false;
-        })->sortByDesc('rating')->take(4)->values();
+        $schoolTeachers = TeacherMatcher::schoolTeachers($profile, $teachers);
+        $teacherCount = $schoolTeachers->count();
+        $allTeacherMatches = TeacherMatcher::forStudent($profile, $teachers);
+        $teacherMatches = $allTeacherMatches->take(4)->values();
+        $teacherMatchCount = $allTeacherMatches->count();
 
         $posts = TeacherPost::query()->orderBy('created_at', 'desc')->take(8)->get();
         $postAuthors = Teacher::query()
@@ -91,19 +75,112 @@ class StudentDashboardController extends Controller
             ->first();
         $tuitionCleared = ! empty($tuitionPayment?->confirmed_at);
 
+        $studentInstitute = trim((string) ($profile?->school ?? Auth::user()?->school ?? ''));
+        $attendanceRecords = Attendance::query()
+            ->where('student_user_id', Auth::id())
+            ->orderBy('date', 'desc')
+            ->take(30)
+            ->get()
+            ->filter(fn ($record) => $studentInstitute === '' || $this->institutesMatch((string) ($record->institute ?? ''), $studentInstitute))
+            ->values();
+        $attendanceStats = [
+            'present' => $attendanceRecords->where('status', 'present')->count(),
+            'late' => $attendanceRecords->where('status', 'late')->count(),
+            'absent' => $attendanceRecords->where('status', 'absent')->count(),
+            'total' => $attendanceRecords->count(),
+        ];
+
+        $assignments = StudentAssignment::query()
+            ->where('user_id', Auth::id())
+            ->orderBy('deadline')
+            ->take(5)
+            ->get();
+        $upcomingAssignments = $assignments
+            ->filter(fn ($assignment) => ($assignment->status ?? 'pending') !== 'submitted')
+            ->values();
+
+        $examResults = StudentExamResult::query()
+            ->where('student_user_id', Auth::id())
+            ->orderBy('exam_date')
+            ->get();
+        $upcomingExams = $examResults
+            ->filter(fn ($exam) => $exam->exam_date && Carbon::parse($exam->exam_date)->isFuture())
+            ->take(5)
+            ->values();
+        $examAverage = $examResults->count() > 0
+            ? round($examResults->avg(fn ($exam) => ((float) $exam->marks / max((float) $exam->out_of, 1)) * 100), 1)
+            : null;
+
+        $progress = StudentProgress::query()->firstWhere('student_user_id', Auth::id());
+        $dashboardProgressBreakdown = collect([
+            ['label' => 'Attendance', 'score' => $progress?->attendance_score, 'color' => '#14b8a6'],
+            ['label' => 'Reading', 'score' => $progress?->reading_score, 'color' => '#3b82f6'],
+            ['label' => 'Writing', 'score' => $progress?->writing_score, 'color' => '#8b5cf6'],
+            ['label' => 'Assignments', 'score' => $progress?->assignment_score, 'color' => '#f59e0b'],
+            ['label' => 'Behaviour', 'score' => $progress?->behavior_score, 'color' => '#10b981'],
+            ['label' => 'Exams', 'score' => $examAverage, 'color' => '#ef4444'],
+        ])->filter(fn ($item) => $item['score'] !== null && $item['score'] !== '')
+            ->map(fn ($item) => $item + ['score' => round((float) $item['score'], 1)])
+            ->values();
+        $dashboardProgressScore = $dashboardProgressBreakdown->isNotEmpty()
+            ? round($dashboardProgressBreakdown->avg('score'), 1)
+            : (float) ($progress?->overall_score ?? 0);
+        $dashboardProgressGradient = 'rgba(148,163,184,0.28) 0 100%';
+        if ($dashboardProgressBreakdown->isNotEmpty()) {
+            $totalScore = max((float) $dashboardProgressBreakdown->sum('score'), 1);
+            $cursor = 0.0;
+            $segments = [];
+
+            foreach ($dashboardProgressBreakdown as $item) {
+                $slice = ((float) $item['score'] / $totalScore) * 100;
+                $end = $cursor + $slice;
+                $segments[] = sprintf('%s %.2f%% %.2f%%', $item['color'], $cursor, $end);
+                $cursor = $end;
+            }
+
+            $dashboardProgressGradient = implode(', ', $segments);
+        }
+
+        $schoolNotices = Notice::query()
+            ->orderBy('published_at', 'desc')
+            ->take(20)
+            ->get()
+            ->filter(fn ($notice) => $studentInstitute === '' || $this->institutesMatch((string) ($notice->institute ?? ''), $studentInstitute))
+            ->values();
+        $eventNotices = $schoolNotices
+            ->filter(fn ($notice) => str_contains(strtolower((string) $notice->title), 'event') || str_contains(strtolower((string) $notice->title), 'program'))
+            ->take(3)
+            ->values();
+        $holidayNotices = $schoolNotices
+            ->filter(fn ($notice) => str_contains(strtolower((string) $notice->title), 'holiday') || str_contains(strtolower((string) $notice->title), 'holyday') || str_contains(strtolower((string) $notice->title), 'vacation'))
+            ->take(3)
+            ->values();
+
         return view('dashboard', compact(
             'profile',
             'profileCompleteness',
             'missingFields',
             'teacherCount',
             'teacherMatches',
+            'teacherMatchCount',
             'selectedSubjects',
             'schoolRecord',
             'schoolRating',
             'posts',
             'postAuthors',
             'tuitionCleared',
-            'currentMonth'
+            'currentMonth',
+            'attendanceStats',
+            'upcomingAssignments',
+            'upcomingExams',
+            'examAverage',
+            'progress',
+            'dashboardProgressBreakdown',
+            'dashboardProgressScore',
+            'dashboardProgressGradient',
+            'schoolNotices',
+            'eventNotices',
+            'holidayNotices'
         ));
     }
 
@@ -117,6 +194,14 @@ class StudentDashboardController extends Controller
         }
 
         return $a === $b || str_contains($a, $b) || str_contains($b, $a);
+    }
+
+    private function classUsesGroup(string $class): bool
+    {
+        preg_match('/\d+/', $class, $matches);
+        $number = isset($matches[0]) ? (int) $matches[0] : null;
+
+        return $number === null || $number < 1 || $number > 8;
     }
 
     private function normalizeInstitute(string $value): string

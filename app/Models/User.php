@@ -11,6 +11,7 @@ use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 use Illuminate\Notifications\Notifiable;
 
@@ -39,6 +40,24 @@ class User extends Model implements AuthenticatableContract, MustVerifyEmailCont
         'password',
         'remember_token',
     ];
+
+    public function getRoleAttribute(mixed $value): string
+    {
+        $role = Str::of((string) ($value ?: 'student'))
+            ->lower()
+            ->trim()
+            ->replaceMatches('/[\s-]+/', '_')
+            ->replaceMatches('/_+/', '_')
+            ->toString();
+
+        return match ($role) {
+            'teacheradmin', 'teacher_admin', 'head_teacher', 'headteacher' => 'teacher_admin',
+            'superadmin', 'super_admin' => 'super_admin',
+            'teacherpanel', 'teacher_panel', 'tutor', 'instructor', 'faculty' => 'teacher',
+            'admin', 'teacher', 'student' => $role,
+            default => 'student',
+        };
+    }
 
     public function getImageUrlAttribute(): ?string
     {

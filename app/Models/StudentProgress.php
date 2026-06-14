@@ -16,6 +16,9 @@ class StudentProgress extends Model
         'class',
         'overall_score',
         'attendance_score',
+        'reading_score',
+        'writing_score',
+        'assignment_score',
         'behavior_score',
         'exam_goal',
         'motivation_note',
@@ -28,4 +31,3 @@ class StudentProgress extends Model
         'subjects' => 'array',
     ];
 }
-
