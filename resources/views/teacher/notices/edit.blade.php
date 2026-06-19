@@ -1,5 +1,7 @@
 <x-app-layout>
-    @php($panel = $panel ?? (request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher'))
+    @php
+        $panel = $panel ?? (request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher');
+    @endphp
     <x-slot name="header">
         <div>
             <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">Teacher</p>

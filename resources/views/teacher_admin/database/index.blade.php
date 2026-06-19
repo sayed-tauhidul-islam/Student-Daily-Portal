@@ -29,7 +29,9 @@
                     </thead>
                     <tbody>
                         @forelse($teachers as $teacher)
-                            @php($user = $usersById[(string) ($teacher->user_id ?? '')] ?? null)
+                            @php
+                                $user = $usersById[(string) ($teacher->user_id ?? '')] ?? null;
+                            @endphp
                             <tr class="border-b">
                                 <td class="px-4 py-3">{{ $user?->name ?? $teacher->name ?? 'Teacher' }}</td>
                                 <td class="px-4 py-3">{{ $user?->email ?? 'No email' }}</td>
@@ -65,7 +67,9 @@
                     </thead>
                     <tbody>
                         @forelse($students as $student)
-                            @php($user = $usersById[(string) ($student->user_id ?? '')] ?? null)
+                            @php
+                                $user = $usersById[(string) ($student->user_id ?? '')] ?? null;
+                            @endphp
                             <tr class="border-b">
                                 <td class="px-4 py-3">{{ $user?->name ?? 'Student' }}</td>
                                 <td class="px-4 py-3">{{ $user?->email ?? 'No email' }}</td>

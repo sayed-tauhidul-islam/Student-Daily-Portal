@@ -55,7 +55,10 @@ class StudentProgressHubController extends Controller
                     return true;
                 }
 
-                return str_contains(strtolower((string) ($notice->institute ?? '')), strtolower($school));
+                $targetUserId = trim((string) ($notice->target_user_id ?? ''));
+
+                return str_contains(strtolower((string) ($notice->institute ?? '')), strtolower($school))
+                    && ($targetUserId === '' || $targetUserId === (string) Auth::id());
             })
             ->values();
 

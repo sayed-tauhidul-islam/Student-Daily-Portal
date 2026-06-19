@@ -24,7 +24,15 @@ class StudentNoticeController extends Controller
         }
 
         $notices = Notice::query()->get()
-            ->filter(fn ($notice) => $this->normalizeInstitute((string) ($notice->institute ?? '')) === $this->normalizeInstitute($institute))
+            ->filter(function ($notice) use ($institute) {
+                if ($this->normalizeInstitute((string) ($notice->institute ?? '')) !== $this->normalizeInstitute($institute)) {
+                    return false;
+                }
+
+                $targetUserId = trim((string) ($notice->target_user_id ?? ''));
+
+                return $targetUserId === '' || $targetUserId === (string) Auth::id();
+            })
             ->sortByDesc(function ($notice) {
                 return (string) ($notice->published_at ?? $notice->created_at ?? '');
             })

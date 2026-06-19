@@ -316,8 +316,15 @@ class SchoolPortalController extends Controller
         [$students, $teachers, $usersById] = $this->schoolMembers($school);
         $payments = PaymentConfirmation::query()->where('school', $school)->orderBy('created_at', 'desc')->get();
 
-        if (Auth::user()?->role !== 'teacher_admin') {
+        if (Auth::user()?->role === 'student') {
             $payments = $payments->where('user_id', (string) Auth::id())->values();
+        } elseif (Auth::user()?->role === 'teacher') {
+            $payments = $payments
+                ->filter(fn ($payment) => ((string) $payment->type === 'tuition_fee' && (string) $payment->role === 'student')
+                    || (string) $payment->user_id === (string) Auth::id())
+                ->values();
+        } elseif (Auth::user()?->role !== 'teacher_admin') {
+            $payments = collect();
         }
 
         return view('portal.payments', compact('school', 'students', 'teachers', 'usersById', 'payments'));
@@ -363,6 +370,7 @@ class SchoolPortalController extends Controller
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
         $user = User::findOrFail($data['user_id']);
+        abort_unless($this->schoolMatches($this->receiverSchool($user), $this->currentSchool()), 403);
 
         PaymentConfirmation::updateOrCreate(
             ['user_id' => (string) $user->getKey(), 'type' => $data['type'], 'month' => $data['month']],

@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Complaint;
+use App\Models\Attendance;
 use App\Models\LeaveApplication;
 use App\Models\LoginReview;
+use App\Models\Notice;
 use App\Models\PaymentConfirmation;
 use App\Models\Student;
 use App\Models\StudentProgress;
+use App\Models\StudentTask;
 use App\Models\Teacher;
 use App\Models\User;
 use Tests\TestCase;
@@ -298,6 +301,65 @@ class HeadTeacherPanelTest extends TestCase
         $this->put(route('teacher-admin.progress.update', $otherStudent), [
             'overall_score' => 95,
         ])->assertForbidden();
+    }
+
+    public function test_head_teacher_can_manage_single_student_operations(): void
+    {
+        $school = 'Khulna Model School';
+        $headTeacher = User::factory()->create([
+            'role' => 'teacher_admin',
+            'school' => $school,
+        ]);
+        $studentUser = User::factory()->create([
+            'role' => 'student',
+            'school' => $school,
+        ]);
+        $student = Student::query()->create([
+            'user_id' => (string) $studentUser->getKey(),
+            'class' => 'Nine',
+            'school' => $school,
+            'area' => 'Khulna',
+        ]);
+
+        $this->actingAs($headTeacher, 'teacher_admin');
+
+        $this->post(route('teacher-admin.attendance.store'), [
+            'student_user_id' => (string) $studentUser->getKey(),
+            'date' => '2026-06-19',
+            'status' => 'present',
+            'note' => 'Morning class attended.',
+        ])->assertSessionHas('success');
+
+        $this->post(route('teacher-admin.students.fees.store', $student), [
+            'month' => '2026-06',
+            'amount' => 1500,
+            'status' => 'pending',
+            'note' => 'Monthly tuition.',
+        ])->assertSessionHas('success');
+
+        $payment = PaymentConfirmation::query()->firstWhere('user_id', (string) $studentUser->getKey());
+
+        $this->patch(route('teacher-admin.students.fees.update', [$student, $payment]), [
+            'amount' => 1500,
+            'status' => 'approved',
+            'note' => 'Cleared by Head Sir.',
+        ])->assertSessionHas('success');
+
+        $this->post(route('teacher-admin.students.notices.store', $student), [
+            'title' => 'Special notice',
+            'body' => 'Bring guardian tomorrow.',
+        ])->assertSessionHas('success');
+
+        $this->post(route('teacher-admin.students.tasks.store', $student), [
+            'title' => 'Complete chapter 3',
+            'due_date' => '2026-06-25',
+            'priority' => 'high',
+        ])->assertSessionHas('success');
+
+        $this->assertNotNull(Attendance::query()->firstWhere('student_user_id', (string) $studentUser->getKey()));
+        $this->assertSame('approved', PaymentConfirmation::query()->firstWhere('user_id', (string) $studentUser->getKey())->status);
+        $this->assertSame((string) $studentUser->getKey(), Notice::query()->firstWhere('title', 'Special notice')->target_user_id);
+        $this->assertNotNull(StudentTask::query()->firstWhere('user_id', (string) $studentUser->getKey()));
     }
 
     public function test_teacher_can_manage_only_students_from_their_own_school(): void

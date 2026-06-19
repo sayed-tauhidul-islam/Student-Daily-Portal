@@ -275,6 +275,14 @@ Route::middleware(['auth:teacher_admin', 'teacher_admin'])->group(function () {
         ->name('teacher-admin.students.create');
     Route::post('/teacher-admin/students', [TeacherAdminStudentController::class, 'store'])
         ->name('teacher-admin.students.store');
+    Route::post('/teacher-admin/students/{student}/fees', [TeacherAdminStudentController::class, 'storeFee'])
+        ->name('teacher-admin.students.fees.store');
+    Route::patch('/teacher-admin/students/{student}/fees/{payment}', [TeacherAdminStudentController::class, 'updateFee'])
+        ->name('teacher-admin.students.fees.update');
+    Route::post('/teacher-admin/students/{student}/notices', [TeacherAdminStudentController::class, 'storeNotice'])
+        ->name('teacher-admin.students.notices.store');
+    Route::post('/teacher-admin/students/{student}/tasks', [TeacherAdminStudentController::class, 'storeTask'])
+        ->name('teacher-admin.students.tasks.store');
     Route::get('/teacher-admin/students/{student}', [TeacherAdminStudentController::class, 'show'])
         ->name('teacher-admin.students.show');
     Route::get('/teacher-admin/students/{student}/edit', [TeacherAdminStudentController::class, 'edit'])
@@ -283,7 +291,6 @@ Route::middleware(['auth:teacher_admin', 'teacher_admin'])->group(function () {
         ->name('teacher-admin.students.update');
     Route::delete('/teacher-admin/students/{student}', [TeacherAdminStudentController::class, 'destroy'])
         ->name('teacher-admin.students.destroy');
-
     Route::get('/teacher-admin/teachers', [TeacherAdminTeacherController::class, 'index'])
         ->name('teacher-admin.teachers.index');
     Route::get('/teacher-admin/teachers/create', [TeacherAdminTeacherController::class, 'create'])

@@ -4,9 +4,13 @@ namespace App\Http\Controllers\TeacherAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\Notice;
+use App\Models\ParentPortalAccess;
+use App\Models\PaymentConfirmation;
 use App\Models\Student;
 use App\Models\StudentExamResult;
 use App\Models\StudentProgress;
+use App\Models\StudentTask;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -83,6 +87,23 @@ class TeacherAdminStudentController extends Controller
             ->where('student_user_id', $this->progressKey($student))
             ->orderBy('exam_date', 'desc')
             ->get();
+        $payments = PaymentConfirmation::query()
+            ->where('school', $this->schoolName())
+            ->where('user_id', (string) $student->user_id)
+            ->where('type', 'tuition_fee')
+            ->orderBy('month', 'desc')
+            ->get();
+        $tasks = StudentTask::query()
+            ->where('user_id', (string) $student->user_id)
+            ->orderBy('due_date')
+            ->get();
+        $notices = Notice::query()
+            ->where('target_user_id', (string) $student->user_id)
+            ->orderBy('published_at', 'desc')
+            ->get()
+            ->filter(fn (Notice $notice) => $this->belongsToSchool((string) ($notice->institute ?? ''), $this->schoolName()))
+            ->values();
+        $guardian = ParentPortalAccess::query()->firstWhere('student_user_id', (string) $student->user_id);
 
         return view('teacher_admin.students.show', [
             'student' => $student,
@@ -90,9 +111,107 @@ class TeacherAdminStudentController extends Controller
             'attendance' => $attendance,
             'progress' => $progress,
             'examResults' => $examResults,
+            'payments' => $payments,
+            'tasks' => $tasks,
+            'notices' => $notices,
+            'guardian' => $guardian,
             'school' => $this->schoolName(),
             'panel' => $this->panel(),
         ]);
+    }
+
+    public function storeFee(Request $request, Student $student): RedirectResponse
+    {
+        $this->ensureSchoolAccess($student->school ?? null);
+
+        $data = $request->validate([
+            'month' => ['required', 'string', 'max:30'],
+            'amount' => ['required', 'numeric', 'min:0'],
+            'status' => ['required', 'in:pending,approved,rejected'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        PaymentConfirmation::query()->updateOrCreate(
+            ['user_id' => (string) $student->user_id, 'type' => 'tuition_fee', 'month' => $data['month']],
+            [
+                'school' => $this->schoolName(),
+                'role' => 'student',
+                'amount' => $data['amount'],
+                'status' => $data['status'],
+                'submitted_by' => (string) Auth::id(),
+                'submitted_at' => now(),
+                'confirmed_by' => (string) Auth::id(),
+                'confirmed_at' => $data['status'] === 'approved' ? now() : null,
+                'note' => $data['note'] ?? null,
+            ]
+        );
+
+        return back()->with('success', 'Student monthly fee saved.');
+    }
+
+    public function updateFee(Request $request, Student $student, PaymentConfirmation $payment): RedirectResponse
+    {
+        $this->ensureSchoolAccess($student->school ?? null);
+        abort_unless((string) $payment->user_id === (string) $student->user_id && $this->belongsToSchool((string) $payment->school, $this->schoolName()), 403);
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0'],
+            'status' => ['required', 'in:pending,approved,rejected'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $payment->fill([
+            'amount' => $data['amount'],
+            'status' => $data['status'],
+            'confirmed_by' => (string) Auth::id(),
+            'confirmed_at' => $data['status'] === 'approved' ? now() : null,
+            'note' => $data['note'] ?? null,
+        ])->save();
+
+        return back()->with('success', 'Student fee updated.');
+    }
+
+    public function storeNotice(Request $request, Student $student): RedirectResponse
+    {
+        $this->ensureSchoolAccess($student->school ?? null);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'body' => ['required', 'string', 'max:5000'],
+        ]);
+
+        Notice::query()->create([
+            'institute' => $this->schoolName(),
+            'teacher_user_id' => (string) Auth::id(),
+            'target_user_id' => (string) $student->user_id,
+            'target_type' => 'student',
+            'title' => $data['title'],
+            'body' => $data['body'],
+            'published_at' => now(),
+        ]);
+
+        return back()->with('success', 'Special notice sent to this student.');
+    }
+
+    public function storeTask(Request $request, Student $student): RedirectResponse
+    {
+        $this->ensureSchoolAccess($student->school ?? null);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'due_date' => ['nullable', 'date'],
+            'priority' => ['nullable', 'in:low,medium,high'],
+        ]);
+
+        StudentTask::query()->create([
+            'user_id' => (string) $student->user_id,
+            'title' => $data['title'],
+            'due_date' => $data['due_date'] ?? null,
+            'priority' => $data['priority'] ?? 'medium',
+            'is_completed' => false,
+        ]);
+
+        return back()->with('success', 'Special task assigned to this student.');
     }
 
     public function create(): View

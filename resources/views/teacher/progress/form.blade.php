@@ -1,5 +1,7 @@
 <x-app-layout>
-    @php($panel = request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher')
+    @php
+        $panel = request()->routeIs('teacher-admin.*') ? 'teacher-admin' : 'teacher';
+    @endphp
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>

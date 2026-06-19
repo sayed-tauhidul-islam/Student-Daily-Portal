@@ -13,6 +13,8 @@ class Notice extends Model
     protected $fillable = [
         'institute',
         'teacher_user_id',
+        'target_user_id',
+        'target_type',
         'title',
         'body',
         'attachments',
