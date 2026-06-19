@@ -1,413 +1,187 @@
 # TutorLink BD - Student Daily Portal
 
-> A modern, role-based school operations portal for Bangladesh, built to keep students, teachers, head teachers, and super admins in clean, separate workflows.
+TutorLink BD is a role-based school operations portal for students, teachers, head teachers, and platform administrators. It is built with Laravel, MongoDB, Blade, Tailwind CSS, Alpine.js, and Vite.
 
-[![Laravel](https://img.shields.io/badge/Laravel-13.x-ff2d20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
-[![MongoDB](https://img.shields.io/badge/MongoDB-5.7+-47a248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38bdf8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Vite](https://img.shields.io/badge/Vite-8.x-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+The application is designed for school and college workflows in Bangladesh, with separate dashboards, authentication guards, navigation menus, and data access rules for each role.
 
-## Hero Snapshot
+## Table of Contents
 
-**Built for clean separation, fast workflows, and polished school administration.**
-
-TutorLink BD is designed like a production dashboard, not a plain CRUD app. Every role gets its own workspace, its own navigation, and its own data scope, so the interface stays focused even when multiple portal sessions are active in the same browser.
-
-| Portal | What it feels like |
-|---|---|
-| Student | A personal academic control room for profile, notices, attendance, logs, and requests |
-| Teacher | A teaching workspace for attendance, posts, notices, and student progress |
-| Head Teacher | A school-admin console for roster control and school-scoped database review |
-| Super Admin | A platform command center for schools, users, subjects, groups, and ratings |
-
-### Quick Links
-- [Project Structure](#project-folder-structure)
-- [Setup and Build](#setup)
-- [Visual Flow](#visual-flow)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [User Roles](#user-roles)
+- [Technology Stack](#technology-stack)
+- [Database](#database)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Environment Configuration](#environment-configuration)
+- [Running the Application](#running-the-application)
 - [Testing](#testing)
 - [Security and Access Control](#security-and-access-control)
+- [Documentation Assets](#documentation-assets)
+- [Author](#author)
+- [License](#license)
 
 ## Overview
-TutorLink BD is a role-aware academic management platform designed for schools and colleges. It provides separate dashboards, menu structures, authentication guards, and data scopes so each user only sees the tools that belong to them.
 
-The project is built to feel modern, clear, and fast:
-- dashboard-first layout with responsive panels
-- smooth drawer navigation and consistent topbar actions
-- portal-aware profile handling for multi-login browser sessions
-- polished MongoDB-backed data flows for school operations
-- role-specific access control for student, teacher, head teacher, and super admin accounts
+TutorLink BD helps schools manage day-to-day academic and administrative work from one web application. Each portal is scoped to the logged-in user's role, so students, teachers, head teachers, and administrators only see the tools and records relevant to them.
 
-## Live Experience Snapshot
-- Students get a focused space for profile updates, notices, attendance, reading logs, tuition requests, and institute teachers.
-- Teachers manage profiles, attendance, notices, tuition posts, and student progress.
-- Head teachers control only their own school-scoped roster and database views.
-- Super admins manage the full platform: schools, students, teachers, subjects, groups, ratings, and system-wide controls.
+The system supports student profiles, teacher profiles, school-scoped rosters, attendance, notices, student progress, payments, complaints, leave applications, reading logs, messaging, login review, and admin-level school management.
 
-## Visual Flow
-```mermaid
-flowchart LR
-    A[Visitor] --> B[Login / Register]
-    B --> C{Role Guard}
-    C -->|Student| S[Student Dashboard]
-    C -->|Teacher| T[Teacher Dashboard]
-    C -->|Head Teacher| H[Head Teacher Panel]
-    C -->|Super Admin| A1[Admin Panel]
+## Key Features
 
-    S --> S1[Profile, Attendance, Notices, Reading Logs]
-    T --> T1[Profile, Posts, Requests, Attendance]
-    H --> H1[School Roster, Database, Student / Teacher Control]
-    A1 --> A2[Schools, Users, Subjects, Groups, Ratings]
-```
+- Multi-role authentication for students, teachers, head teachers, and administrators
+- Role-aware dashboards and navigation
+- School-scoped student and teacher management
+- Attendance create, update, and delete workflows
+- Student progress tracking with subject performance and exam result records
+- Tuition fee and payment confirmation workflows
+- Institute notices and student-specific notices
+- Student tasks, goals, assignments, and progress hub
+- Teacher posts and student tuition requests
+- School member messaging
+- Complaint and leave review workflows
+- Login review, blocking, and account control for school authorities
+- Responsive Blade and Tailwind CSS interface
 
-## Core Features
+## User Roles
 
-### Role-Based Access
-- Separate session guards for student, teacher, teacher admin, and admin
-- Role-aware redirects after login
-- Portal-specific navigation and profile links
-- Guard-safe logout and profile editing
+### Student
 
-### Student Portal
-- Update personal profile and avatar
-- View attendance and institute notices
-- Browse institute teachers
-- Send tuition or school-related requests
-- Track reading logs, leaves, complaints, and payment status
+Students can manage their profile, view attendance, read notices, browse institute teachers, submit requests, track reading logs, submit payment confirmations, view progress, manage tasks, and access school communication tools.
 
-### Teacher Portal
-- Maintain professional profile details
-- Create tuition posts and review requests
-- Manage attendance and student progress
-- Share notices and teaching updates
+### Teacher
 
-### Head Teacher Portal
-- View only school-linked student and teacher records
-- Manage school-scoped rosters without mixing other roles
-- Search and review login records
-- Keep the school database organized and controlled
+Teachers can manage their professional profile, create posts, review student requests, manage attendance, publish notices, update student progress, and communicate with school members.
 
-### Super Admin Portal
-- Manage schools, subjects, groups, ratings, students, and teachers
-- Review system-wide signups and access patterns
-- Maintain platform-wide visibility and governance
+### Head Teacher
 
-### UI and Experience
-- Modern dashboard shell with layered gradients and soft glass-like surfaces
-- Collapsible sidebar for non-student roles
-- Polished avatar handling across profile areas
-- Responsive cards, tables, and quick actions for desktop and mobile
-- Subtle motion through drawers, hover states, and live feedback patterns
+Head teachers manage records for their own school only. They can control student and teacher rosters, manage student attendance, update progress, approve or edit monthly fees, send student-specific notices or tasks, review complaints and leaves, inspect school messages, and manage login reviews.
+
+### Administrator
+
+Administrators manage platform-level records such as schools, students, teachers, subjects, groups, ratings, and system-wide login review.
 
 ## Technology Stack
 
-### Frontend
-- Laravel Blade templates
-- Tailwind CSS
-- Alpine.js
-- Vite asset pipeline
-
 ### Backend
+
 - PHP 8.3+
 - Laravel 13
-- Role-based middleware
-- Notification, login review, and school portal controllers
+- Laravel Breeze
+- Laravel middleware and multi-guard authentication
+- MongoDB Laravel driver: `mongodb/laravel-mongodb`
 
-### Database
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Controller.php
-│   │   │   ├── ProfileController.php
-│   │   │   ├── NotificationController.php
-│   │   │   ├── ParentPortalController.php
-│   │   │   ├── SchoolPortalController.php
-│   │   │   ├── Auth/
-│   │   │   │   ├── AuthenticatedSessionController.php
-│   │   │   │   ├── ConfirmablePasswordController.php
-│   │   │   │   ├── EmailVerificationNotificationController.php
-│   │   │   │   ├── EmailVerificationPromptController.php
-│   │   │   │   ├── NewPasswordController.php
-│   │   │   │   ├── PasswordController.php
-│   │   │   │   ├── PasswordResetLinkController.php
-│   │   │   │   ├── RegisteredUserController.php
-│   │   │   │   └── VerifyEmailController.php
-│   │   │   ├── Admin/
-│   │   │   │   ├── AdminDashboardController.php
-│   │   │   │   ├── AdminStudentController.php
-│   │   │   │   ├── AdminTeacherController.php
-│   │   │   │   ├── ManageGroupController.php
-│   │   │   │   ├── ManageRatingController.php
-│   │   │   │   ├── ManageSchoolController.php
-│   │   │   │   ├── ManageStudentController.php
-│   │   │   │   ├── ManageSubjectController.php
-│   │   │   │   └── ManageTeacherController.php
-│   │   │   ├── Frontend/
-│   │   │   │   ├── HomeController.php
-│   │   │   │   ├── SchoolController.php
-│   │   │   │   └── TeacherController.php
-│   │   │   ├── Student/
-│   │   │   │   ├── StudentAttendanceController.php
-│   │   │   │   ├── StudentDashboardController.php
-│   │   │   │   ├── StudentInstituteTeacherController.php
-│   │   │   │   ├── StudentNoticeController.php
-│   │   │   │   ├── StudentProfileController.php
-│   │   │   │   ├── StudentProgressHubController.php
-│   │   │   │   └── StudentRequestController.php
-│   │   │   ├── Teacher/
-│   │   │   │   ├── TeacherAttendanceController.php
-│   │   │   │   ├── TeacherDashboardController.php
-│   │   │   │   ├── TeacherFinderController.php
-│   │   │   │   ├── TeacherNoticeController.php
-│   │   │   │   ├── TeacherPostController.php
-│   │   │   │   ├── TeacherProfileController.php
-│   │   │   │   └── TeacherStudentProgressController.php
-│   │   │   ├── AdminMiddleware.php
-│   │   │   ├── PortalGuardMiddleware.php
-│   │   │   ├── StudentMiddleware.php
-│   │   │   ├── TeacherAdminMiddleware.php
-│   │   │   └── TeacherMiddleware.php
-│   │   └── Requests/
-│   │       ├── Auth/
-│   │       │   └── LoginRequest.php
-│   │       ├── ProfileUpdateRequest.php
-│   │       └── ...
-│   ├── Mail/
-│   │   └── PostRequested.php
-│   ├── Models/
-│   │   ├── Attendance.php
-│   │   ├── BlockedIdentity.php
-│   │   ├── Complaint.php
-│   │   ├── Group.php
-│   │   ├── LeaveApplication.php
-│   │   ├── LoginReview.php
-│   │   ├── Message.php
-│   │   ├── Notice.php
-│   │   ├── ParentPortalAccess.php
-│   │   ├── PaymentConfirmation.php
-│   │   ├── Rating.php
-│   │   ├── ReadingLog.php
-│   │   ├── School.php
-│   │   ├── Student.php
-│   │   ├── StudentAssignment.php
-│   │   ├── StudentExamResult.php
-│   │   ├── StudentGoal.php
-│   │   ├── StudentProgress.php
-│   │   ├── StudentRequest.php
-│   │   ├── StudentTask.php
-│   │   ├── Subject.php
-│   │   ├── Teacher.php
-│   │   ├── TeacherPost.php
-│   │   └── User.php
-│   ├── Notifications/
-│   │   └── PostRequestedNotification.php
-│   ├── Providers/
-│   │   └── AppServiceProvider.php
-│   └── Support/
-│       └── Lists/
-├── bootstrap/
-│   ├── app.php
-│   └── providers.php
-├── config/
-│   ├── app.php
-│   ├── auth.php
-│   ├── cache.php
-│   ├── database.php
-│   ├── filesystems.php
-│   ├── logging.php
-│   ├── mail.php
-│   ├── queue.php
-│   ├── services.php
-│   └── session.php
-├── database/
-│   ├── factories/
-│   │   └── UserFactory.php
-│   ├── migrations/
-│   │   ├── 0001_01_01_000000_create_users_table.php
-│   │   ├── 0001_01_01_000001_create_cache_table.php
-│   │   ├── 0001_01_01_000002_create_jobs_table.php
-│   │   ├── 2026_05_22_000000_create_notifications_table.php
-│   │   └── 2026_05_30_180857_add_missing_fields_to_users_table.php
-│   └── seeders/
-│       └── DatabaseSeeder.php
-├── docs/
-│   ├── er-diagram.mmd
-│   └── use-case-diagram.mmd
-├── public/
-│   ├── build/
-│   ├── index.php
-│   ├── robots.txt
-│   └── storage/
-├── resources/
-│   ├── css/
-│   │   └── app.css
-│   ├── js/
-│   │   └── app.js
-│   └── views/
-│       ├── admin/
-│       │   ├── dashboard.blade.php
-│       │   ├── groups/
-│       │   │   ├── form.blade.php
-│       │   │   └── index.blade.php
-│       │   ├── head-teachers/
-│       │   │   └── index.blade.php
-│       │   ├── ratings/
-│       │   │   ├── form.blade.php
-│       │   │   └── index.blade.php
-│       │   ├── schools/
-│       │   │   ├── form.blade.php
-│       │   │   └── index.blade.php
-│       │   ├── students/
-│       │   │   ├── form.blade.php
-│       │   │   └── index.blade.php
-│       │   ├── subjects/
-│       │   │   ├── form.blade.php
-│       │   │   └── index.blade.php
-│       │   └── teachers/
-│       │       ├── form.blade.php
-│       │       └── index.blade.php
-│       ├── auth/
-│       ├── components/
-│       ├── dashboard.blade.php
-│       ├── emails/
-│       ├── frontend/
-│       ├── layouts/
-│       │   ├── app.blade.php
-│       │   ├── footer.blade.php
-│       │   ├── guest.blade.php
-│       │   ├── navigation.blade.php
-│       │   └── partials/
-│       │       ├── nav-links-admin.blade.php
-│       │       ├── nav-links-admin-responsive.blade.php
-│       │       ├── nav-links-student.blade.php
-│       │       ├── nav-links-student-responsive.blade.php
-│       │       ├── nav-links-teacher.blade.php
-│       │       ├── nav-links-teacher-responsive.blade.php
-│       │       ├── nav-links-teacher-admin.blade.php
-│       │       └── nav-links-teacher-admin-responsive.blade.php
-│       ├── notifications/
-│       │   └── index.blade.php
-│       ├── parent/
-│       ├── portal/
-│       ├── profile/
-│       │   ├── edit.blade.php
-│       │   └── partials/
-│       │       ├── delete-user-form.blade.php
-│       │       ├── update-password-form.blade.php
-│       │       └── update-profile-information-form.blade.php
-│       ├── student/
-│       │   ├── attendance/
-│       │   ├── dashboard.blade.php
-│       │   ├── institute-teachers/
-│       │   ├── notices/
-│       │   ├── profile-create.blade.php
-│       │   ├── progress-hub/
-│       │   └── requests.blade.php
-│       ├── teacher/
-│       │   ├── attendance/
-│       │   ├── dashboard.blade.php
-│       │   ├── index.blade.php
-│       │   ├── notices/
-│       │   ├── posts/
-│       │   ├── profile.blade.php
-│       │   └── progress/
-│       ├── teacher_admin/
-│       │   ├── dashboard.blade.php
-│       │   ├── database/
-│       │   ├── students/
-│       │   └── teachers/
-│       └── welcome.blade.php
-├── routes/
-│   ├── auth.php
-│   ├── console.php
-│   └── web.php
-├── screenshots/
-├── storage/
-│   ├── app/
-│   ├── framework/
-│   └── logs/
-├── tests/
-│   ├── Feature/
-│   │   ├── AdminDashboardTest.php
-│   │   ├── AdminRosterFilterTest.php
-│   │   ├── ExampleTest.php
-│   │   ├── MultiGuardSessionTest.php
-│   │   ├── ProfileTest.php
-│   │   └── Auth/
-│   └── TestCase.php
-├── artisan
-├── composer.json
-├── package.json
-├── phpunit.xml
-├── postcss.config.js
-├── tailwind.config.js
-├── vite.config.js
-└── README.md
+### Frontend
+
+- Laravel Blade
+- Tailwind CSS
+- Alpine.js
+- Vite
+
+### Database Software
+
+- MongoDB
+
+### Development and Testing
+
+- Composer
+- npm
+- PHPUnit
+- Laravel Pint
+- Laravel Pail
+
+## Database
+
+This project uses MongoDB as the primary database software.
+
+The default database connection is configured as:
+
+```env
+DB_CONNECTION=mongodb
+DB_HOST=127.0.0.1
+DB_PORT=27017
+DB_DATABASE=student_daily_portal
+DB_USERNAME=
+DB_PASSWORD=
 ```
 
-### Focused View Maps
+The MongoDB connection is defined in `config/database.php`, and the application models use MongoDB-backed collections through the Laravel MongoDB package.
 
-#### `resources/views/portal`
-These files power the shared portal utility screens used by student, teacher, parent, and school workflows.
+Main data areas include:
+
+- users
+- students
+- teachers
+- schools
+- subjects
+- groups
+- attendances
+- notices
+- student progress
+- student tasks
+- messages
+- payment confirmations
+- complaints
+- leave applications
+- login reviews
+
+## Project Structure
 
 ```text
-resources/views/portal/
-├── complaints.blade.php
-├── head-search.blade.php
-├── leaves.blade.php
-├── login-reviews.blade.php
-├── messages.blade.php
-├── payments.blade.php
-├── reading-logs.blade.php
-└── school-members.blade.php
-```
+app/
+  Http/
+    Controllers/
+      Admin/
+      Auth/
+      Frontend/
+      Student/
+      Teacher/
+      TeacherAdmin/
+    Middleware/
+    Requests/
+  Models/
+  Notifications/
+  Providers/
+  Support/
 
-#### `screenshots`
-Repository UI preview assets live here.
-
-```text
+config/
+database/
+docs/
+public/
+resources/
+  css/
+  js/
+  views/
+routes/
 screenshots/
-├── home_page.png
-├── login_page.png
-├── register_page.png
-├── student_dashboard1.png
-├── student_dashboard2.png
-├── student_dashboard3.png
-├── student_dashboard4.png
-├── student_dashboard5.png
-├── student_dashboard6.png
-├── student_dashboard7.png
-├── student_dashboard8.png
-├── student_dashboard9.png
-└── student_dashboard10.png
-```
-
-#### `storage`
-Runtime files, cache, and logs are stored here during local development and production.
-
-```text
 storage/
-├── app/
-├── framework/
-└── logs/
+tests/
 ```
 
-## Architecture Notes
-- `routes/web.php` contains the portal routing map and dashboard redirects.
-- `bootstrap/app.php` registers role middleware aliases.
-- `app/Http/Requests/Auth/LoginRequest.php` selects the correct authentication guard by portal.
-- `app/Http/Controllers/ProfileController.php` resolves the active guard so profile updates stay on the correct account.
-- `resources/views/layouts/app.blade.php` and `resources/views/layouts/navigation.blade.php` provide the shared authenticated shell.
+Important files:
 
-## Setup
+- `routes/web.php` - main web routes and portal route groups
+- `routes/auth.php` - authentication routes
+- `config/auth.php` - guard and provider configuration
+- `config/database.php` - MongoDB and other database connection settings
+- `resources/views/layouts/app.blade.php` - authenticated application layout
+- `resources/views/layouts/navigation.blade.php` - shared navigation shell
+- `app/Http/Controllers/SchoolPortalController.php` - shared school portal workflows
+- `app/Http/Controllers/TeacherAdmin/TeacherAdminStudentController.php` - head teacher student management
+
+## Installation
 
 ### Requirements
-- PHP 8.3+
+
+- PHP 8.3 or later
 - Composer
-- Node.js 18+
+- Node.js 18 or later
 - npm
 - MongoDB server
+- PHP MongoDB extension
 
-### Install
+### Setup
+
 ```bash
 composer install
 npm install
@@ -415,84 +189,128 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-### Configure `.env`
-Set your database and app values before running the app.
+Configure MongoDB in `.env`, then run:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+## Environment Configuration
+
+Recommended local `.env` values:
 
 ```env
 APP_NAME="TutorLink BD"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
 APP_URL=http://localhost:8000
+
 DB_CONNECTION=mongodb
 DB_HOST=127.0.0.1
 DB_PORT=27017
 DB_DATABASE=tutorlink_bd
 DB_USERNAME=
 DB_PASSWORD=
+
 FILESYSTEM_DISK=public
+SESSION_DRIVER=database
+QUEUE_CONNECTION=database
+CACHE_STORE=database
 ```
 
-### Build and Run Commands
+Generate the application key after copying the environment file:
+
 ```bash
-# Prepare the application
-composer install
-npm install
-cp .env.example .env
 php artisan key:generate
+```
 
-# Database and seed data
-php artisan migrate
-php artisan db:seed
+## Running the Application
 
-# Development mode
-npm run dev
+Start the Laravel development server:
+
+```bash
 php artisan serve
+```
 
-# Production build
+Start the Vite development server:
+
+```bash
+npm run dev
+```
+
+For a production-ready frontend build:
+
+```bash
 npm run build
+```
 
-# Run tests
-php artisan test
+The project also includes a Composer development script that can run the Laravel server, queue listener, logs, and Vite together:
+
+```bash
+composer run dev
 ```
 
 ## Testing
+
 Run the full test suite:
+
 ```bash
 php artisan test
 ```
 
-Useful focused checks:
+Run selected feature tests:
+
 ```bash
-php artisan test --filter=ProfileTest
-php artisan test --filter=MultiGuardSessionTest
-php artisan test --filter=AdminRosterFilterTest
+php artisan test tests/Feature/HeadTeacherPanelTest.php
+php artisan test tests/Feature/MultiGuardSessionTest.php
+php artisan test tests/Feature/AdminRosterFilterTest.php
+```
+
+Clear cached configuration and views if the application behaves unexpectedly during development:
+
+```bash
+php artisan optimize:clear
 ```
 
 ## Security and Access Control
-- CSRF-protected forms
-- Password hashing through Laravel
-- Guard-aware multi-session handling
-- School-level ownership checks for admin workflows
-- Role middleware enforcement on protected routes
 
-## Screenshots
-If available in your workspace, preview assets live in `screenshots/`.
+- Separate guards for student, teacher, teacher admin, and admin accounts
+- Role middleware for protected routes
+- Portal-aware dashboard redirects
+- CSRF protection on forms
+- Laravel password hashing
+- School-level ownership checks for head teacher workflows
+- Student-specific visibility for private notices and payment records
+- Guard-aware profile updates and logout behavior
 
-Suggested captures:
-- home page
-- login page
-- student dashboard
-- teacher dashboard
-- head teacher panel
-- super admin panel
+## Documentation Assets
 
-## Roadmap
-- Student progress analytics dashboard
-- Exam result and performance trends
-- Parent or guardian portal
-- Better messaging and notification workflows
-- More visual insights for school-level operations
+Additional project diagrams are available in:
+
+```text
+docs/er-diagram.mmd
+docs/use-case-diagram.mmd
+```
+
+UI screenshots are stored in:
+
+```text
+screenshots/
+```
+
+## Maintenance Notes
+
+- Keep `.env` out of version control.
+- Run tests after changing role, guard, payment, attendance, or school-scoped logic.
+- Use `php artisan optimize:clear` after route, config, or Blade cache issues.
+- Use MongoDB-compatible model patterns when adding new collections.
 
 ## Author
+
 Sayed Tauhidul Islam
 
 ## License
+
 This project is maintained for academic and product development purposes.
