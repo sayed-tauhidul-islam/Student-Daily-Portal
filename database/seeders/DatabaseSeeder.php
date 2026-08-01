@@ -6,14 +6,13 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    private const ADMIN_EMAIL = 'admin@tutorlinkbd.com';
-
-    private const ADMIN_PASSWORD = 'admin12345';
+    private const ADMIN_EMAIL = 'superadminstp@gmail.com';
 
     /**
      * Seed the application's database.
@@ -28,20 +27,21 @@ class DatabaseSeeder extends Seeder
             TeacherSeeder::class,
         ]);
 
-        User::updateOrCreate([
-            'email' => self::ADMIN_EMAIL,
-        ], [
-            'name' => 'Admin',
-            'password' => Hash::make(self::ADMIN_PASSWORD),
-            'role' => 'admin',
-        ]);
+        $admin = User::query()->firstOrNew(['email' => self::ADMIN_EMAIL]);
+        $adminPassword = env('SEED_SUPER_ADMIN_PASSWORD');
 
-        User::updateOrCreate([
-            'email' => 'test@example.com',
-        ], [
-            'name' => 'Test User',
-            'password' => bcrypt('password'),
-            'role' => 'student',
+        if (! $admin->exists && blank($adminPassword)) {
+            throw new RuntimeException('Set SEED_SUPER_ADMIN_PASSWORD before creating the initial Super Admin.');
+        }
+
+        $admin->fill([
+            'name' => 'Super Admin',
+            'role' => 'super_admin',
         ]);
+        if (filled($adminPassword)) {
+            $admin->password = Hash::make($adminPassword);
+        }
+        $admin->save();
+
     }
 }

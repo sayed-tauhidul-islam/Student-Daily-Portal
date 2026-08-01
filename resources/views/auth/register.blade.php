@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Register · TutorLink BD</title>
+<title>Register · Student Daily Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 <style>
@@ -329,12 +329,12 @@
 <main class="page-wrapper" aria-label="Create account">
 
   <!-- LEFT -->
-  <aside class="left" aria-label="TutorLink BD benefits">
+  <aside class="left" aria-label="Student Daily Portal benefits">
     <div class="brand-row">
       <div class="brand-icon">
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2L3 7v6l7 5 7-5V7L10 2z"/></svg>
       </div>
-      <span class="brand-name">TutorLink BD</span>
+      <span class="brand-name">Student Daily Portal</span>
     </div>
 
     <div>
@@ -565,7 +565,7 @@
             <div class="field">
               <label for="bio">About your school / organization</label>
               <div class="field-wrap no-icon">
-                <textarea id="bio" name="bio" placeholder="Describe your institution, its mission, and how you plan to use TutorLink BD..."></textarea>
+                <textarea id="bio" name="bio" placeholder="Describe your institution, its mission, and how you plan to use Student Daily Portal..."></textarea>
               </div>
             </div>
           </div>

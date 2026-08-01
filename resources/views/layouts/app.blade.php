@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>TutorLink BD</title>
+        <title>Student Daily Portal</title>
 
         <link rel="icon" type="image/svg+xml" href="{{ asset('tb-favicon.svg') }}">
         <link rel="shortcut icon" href="{{ asset('tb-favicon.svg') }}">

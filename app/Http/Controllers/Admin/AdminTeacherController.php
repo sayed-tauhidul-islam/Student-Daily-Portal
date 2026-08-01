@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AdminTeacherController extends Controller
@@ -71,7 +72,7 @@ class AdminTeacherController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique(User::class)],
             'password' => ['required', 'string', 'min:6'],
             'role' => ['required', 'in:teacher,teacher_admin'],
             'school' => ['nullable', 'string', 'max:255'],
@@ -153,7 +154,7 @@ class AdminTeacherController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique(User::class)->ignore($user?->getKey())],
             'password' => ['nullable', 'string', 'min:6'],
             'role' => ['required', 'in:teacher,teacher_admin'],
             'school' => ['nullable', 'string', 'max:255'],

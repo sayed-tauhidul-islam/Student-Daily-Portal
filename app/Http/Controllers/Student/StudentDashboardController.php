@@ -193,7 +193,7 @@ class StudentDashboardController extends Controller
             return false;
         }
 
-        return $a === $b || str_contains($a, $b) || str_contains($b, $a);
+        return $a === $b;
     }
 
     private function classUsesGroup(string $class): bool

@@ -14,7 +14,7 @@ class ParentPortalController extends Controller
     public function show(string $code): View
     {
         $access = ParentPortalAccess::query()->firstWhere('access_code', $code);
-        abort_if(! $access || ! $access->is_active, 404);
+        abort_if(! $access || ! $access->is_active || ! $access->expires_at || $access->expires_at->isPast(), 404);
 
         $studentUser = User::query()->find($access->student_user_id);
         $student = Student::query()->firstWhere('user_id', $access->student_user_id);
@@ -31,4 +31,3 @@ class ParentPortalController extends Controller
         return view('parent.portal', compact('access', 'studentUser', 'student', 'progress', 'results', 'overallAvg'));
     }
 }
-

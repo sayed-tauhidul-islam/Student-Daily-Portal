@@ -82,7 +82,7 @@ class TeacherAdminDashboardController extends Controller
             return false;
         }
 
-        return $value === $school || str_contains($value, $school) || str_contains($school, $value);
+        return $value === $school;
     }
 
     private function normalize(string $value): string

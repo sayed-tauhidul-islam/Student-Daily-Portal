@@ -15,6 +15,7 @@ use App\Models\Teacher;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -57,7 +58,7 @@ class StudentProgressHubController extends Controller
 
                 $targetUserId = trim((string) ($notice->target_user_id ?? ''));
 
-                return str_contains(strtolower((string) ($notice->institute ?? '')), strtolower($school))
+                return $this->sameSchool((string) ($notice->institute ?? ''), $school)
                     && ($targetUserId === '' || $targetUserId === (string) Auth::id());
             })
             ->values();
@@ -67,7 +68,7 @@ class StudentProgressHubController extends Controller
                 return false;
             }
 
-            return str_contains(strtolower((string) ($teacher->institution ?? '')), strtolower($school));
+            return $this->sameSchool((string) ($teacher->institution ?? ''), $school);
         })->take(6)->values();
 
         $completedTasks = $tasks->where('is_completed', true)->count();
@@ -264,7 +265,9 @@ class StudentProgressHubController extends Controller
         ]);
 
         $existing = ParentPortalAccess::query()->firstWhere('student_user_id', Auth::id());
-        $code = $existing?->access_code ?: strtoupper(substr(md5((string) Auth::id().now()->timestamp), 0, 10));
+        $code = $existing && $existing->is_active && strlen((string) $existing->access_code) >= 64
+            ? $existing->access_code
+            : Str::random(64);
 
         ParentPortalAccess::query()->updateOrCreate(
             ['student_user_id' => Auth::id()],
@@ -274,10 +277,20 @@ class StudentProgressHubController extends Controller
                 'relation' => $data['relation'],
                 'contact' => $data['contact'] ?? null,
                 'is_active' => true,
+                'expires_at' => now()->addDays(90),
             ]
         );
 
         return back()->with('success', 'Parent portal saved.');
+    }
+
+    public function revokeParentPortal(): RedirectResponse
+    {
+        ParentPortalAccess::query()
+            ->where('student_user_id', Auth::id())
+            ->update(['is_active' => false]);
+
+        return back()->with('success', 'Parent portal access has been revoked.');
     }
 
     private function buildStreak($tasks): int
@@ -298,5 +311,17 @@ class StudentProgressHubController extends Controller
         }
 
         return $streak;
+    }
+
+    private function sameSchool(string $left, string $right): bool
+    {
+        $left = strtolower(trim($left));
+        $right = strtolower(trim($right));
+        $left = preg_replace('/[^a-z0-9\s]/', ' ', $left) ?? $left;
+        $right = preg_replace('/[^a-z0-9\s]/', ' ', $right) ?? $right;
+        $left = preg_replace('/\s+/', ' ', $left) ?? $left;
+        $right = preg_replace('/\s+/', ' ', $right) ?? $right;
+
+        return $left !== '' && $left === $right;
     }
 }

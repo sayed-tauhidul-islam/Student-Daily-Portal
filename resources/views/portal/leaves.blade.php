@@ -57,7 +57,7 @@
                                 <p class="text-xs app-muted">Status: {{ ucfirst((string) ($leave->status ?? 'pending')) }}</p>
                             </div>
                             @if(!empty($leave->document_path))
-                                <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($leave->document_path) }}" target="_blank" class="text-sm font-semibold app-primary">Open Document</a>
+                                <a href="{{ route('leave-documents.download', $leave) }}" class="text-sm font-semibold app-primary">Download Document</a>
                             @endif
                         </div>
                         <p class="mt-3 text-sm leading-6">{{ $leave->reason }}</p>

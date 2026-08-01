@@ -22,7 +22,7 @@ class StudentRequestController extends Controller
     public function index(): View
     {
         $requests = StudentRequest::where('user_id', Auth::id())->orderBy('created_at', -1)->get();
-        $feed = StudentRequest::query()->where('status', 'pending')->orderBy('created_at', -1)->take(12)->get();
+        $feed = collect();
 
         return view('student.requests', [
             'requests' => $requests,
@@ -81,7 +81,9 @@ class StudentRequestController extends Controller
             'message' => ['nullable', 'string', 'max:2000'],
         ]);
 
+        abort_unless($tuitionRequest->status === 'pending', 403);
         $applications = collect($tuitionRequest->applications ?? []);
+        abort_if($applications->contains(fn (array $application) => (string) ($application['teacher_id'] ?? '') === (string) Auth::id()), 422, 'You have already applied to this request.');
         $applications->push([
             'teacher_id' => Auth::id(),
             'teacher_name' => Auth::user()?->name,
@@ -149,6 +151,8 @@ class StudentRequestController extends Controller
 
     public function approve(Request $request, StudentRequest $studentRequest): RedirectResponse
     {
+        abort_unless($studentRequest->status === 'pending', 403);
+        abort_unless(collect($studentRequest->applications ?? [])->contains(fn (array $application) => (string) ($application['teacher_id'] ?? '') === (string) Auth::id()), 403);
         $studentRequest->teacher_id = Auth::id();
         $studentRequest->status = 'approved';
         $studentRequest->save();

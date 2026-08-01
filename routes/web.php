@@ -124,6 +124,8 @@ Route::middleware(['auth:student', 'student'])->group(function () {
         ->name('student.progress-hub.goals.update');
     Route::post('/student/progress-hub/parent-portal', [StudentProgressHubController::class, 'saveParentPortal'])
         ->name('student.progress-hub.parent-portal.save');
+    Route::delete('/student/progress-hub/parent-portal', [StudentProgressHubController::class, 'revokeParentPortal'])
+        ->name('student.progress-hub.parent-portal.revoke');
     Route::get('/student/school-members', [SchoolPortalController::class, 'studentSchool'])
         ->name('student.school-members');
     Route::get('/student/messages', [SchoolPortalController::class, 'messages'])
@@ -226,20 +228,6 @@ Route::middleware(['auth:teacher', 'teacher'])->group(function () {
         ->name('teacher.progress.results.store');
     Route::delete('/teacher/student-progress/{student}/exam-results/{result}', [TeacherStudentProgressController::class, 'destroyExamResult'])
         ->name('teacher.progress.results.destroy');
-    Route::get('/teacher/students', [TeacherAdminStudentController::class, 'index'])
-        ->name('teacher.students.index');
-    Route::get('/teacher/students/create', [TeacherAdminStudentController::class, 'create'])
-        ->name('teacher.students.create');
-    Route::post('/teacher/students', [TeacherAdminStudentController::class, 'store'])
-        ->name('teacher.students.store');
-    Route::get('/teacher/students/{student}', [TeacherAdminStudentController::class, 'show'])
-        ->name('teacher.students.show');
-    Route::get('/teacher/students/{student}/edit', [TeacherAdminStudentController::class, 'edit'])
-        ->name('teacher.students.edit');
-    Route::put('/teacher/students/{student}', [TeacherAdminStudentController::class, 'update'])
-        ->name('teacher.students.update');
-    Route::delete('/teacher/students/{student}', [TeacherAdminStudentController::class, 'destroy'])
-        ->name('teacher.students.destroy');
     Route::get('/teacher/messages', [SchoolPortalController::class, 'messages'])
         ->name('teacher.messages');
     Route::post('/teacher/messages', [SchoolPortalController::class, 'sendMessage'])
@@ -264,6 +252,11 @@ Route::middleware(['auth:teacher', 'teacher'])->group(function () {
 
 Route::get('/parent-portal/{code}', [ParentPortalController::class, 'show'])
     ->name('parent.portal');
+
+Route::middleware(['auth:student,teacher,teacher_admin,admin', 'portal_guard'])->group(function () {
+    Route::get('/leave-documents/{leave}', [SchoolPortalController::class, 'downloadLeaveDocument'])
+        ->name('leave-documents.download');
+});
 
 Route::middleware(['auth:teacher_admin', 'teacher_admin'])->group(function () {
     Route::get('/teacher-admin/dashboard', [TeacherAdminDashboardController::class, 'index'])

@@ -30,7 +30,7 @@ class PostRequested extends Mailable implements ShouldQueue
      */
     public function build()
     {
-        return $this->subject('New request for your post on TutorLink BD')
+        return $this->subject('New request for your post on Student Daily Portal')
             ->view('emails.post_requested');
     }
 }

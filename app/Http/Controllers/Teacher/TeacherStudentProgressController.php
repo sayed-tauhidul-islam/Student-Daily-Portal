@@ -19,7 +19,7 @@ class TeacherStudentProgressController extends Controller
     {
         $school = $this->currentSchool();
         $students = Student::query()->get()->filter(function (Student $student) use ($school) {
-            return $school !== '' && str_contains(strtolower((string) ($student->school ?? '')), strtolower($school));
+            return $school !== '' && $this->sameSchool((string) ($student->school ?? ''), $school);
         })->values();
         $studentUserIds = $students->pluck('user_id')->filter()->map(fn ($id) => (string) $id)->values();
         $progressKeys = $students->map(fn (Student $student) => $this->progressKey($student))->filter()->values();
@@ -210,7 +210,7 @@ class TeacherStudentProgressController extends Controller
         $left = $this->normalize($left);
         $right = $this->normalize($right);
 
-        return $left !== '' && $right !== '' && ($left === $right || str_contains($left, $right) || str_contains($right, $left));
+        return $left !== '' && $right !== '' && $left === $right;
     }
 
     private function normalize(string $value): string

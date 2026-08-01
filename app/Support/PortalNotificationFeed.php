@@ -121,7 +121,7 @@ class PortalNotificationFeed
         $left = self::normalize($left);
         $right = self::normalize($right);
 
-        return $left !== '' && $right !== '' && ($left === $right || str_contains($left, $right) || str_contains($right, $left));
+        return $left !== '' && $right !== '' && $left === $right;
     }
 
     private static function normalize(string $value): string

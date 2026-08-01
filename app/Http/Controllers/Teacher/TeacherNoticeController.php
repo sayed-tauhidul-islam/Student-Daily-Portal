@@ -177,7 +177,8 @@ class TeacherNoticeController extends Controller
     private function canManage(Notice $notice, string $institute): bool
     {
         return $institute !== ''
-            && $this->normalizeInstitute((string) ($notice->institute ?? '')) === $this->normalizeInstitute($institute);
+            && $this->normalizeInstitute((string) ($notice->institute ?? '')) === $this->normalizeInstitute($institute)
+            && ((Auth::user()?->role ?? '') === 'teacher_admin' || (string) $notice->teacher_user_id === (string) Auth::id());
     }
 
     private function normalizeInstitute(string $value): string

@@ -62,15 +62,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        $portal = $this->portalForRole((string) ($request->attributes->get('authenticated_role') ?? $user?->role ?? 'student'));
-        $dashboardRoute = match ($portal) {
-            'teacher' => 'teacher.dashboard',
-            'teacher-admin' => 'teacher-admin.dashboard',
-            'admin' => 'admin.dashboard',
-            default => 'student.dashboard',
-        };
-
-        return redirect()->route($dashboardRoute);
+        return redirect()->route('dashboard');
     }
 
     /**

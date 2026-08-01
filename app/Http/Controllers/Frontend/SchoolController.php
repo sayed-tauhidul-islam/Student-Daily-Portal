@@ -56,6 +56,6 @@ class SchoolController extends Controller
         $left = preg_replace('/\s+/', ' ', preg_replace('/[^a-z0-9\s]/', ' ', $left) ?? $left) ?? $left;
         $right = preg_replace('/\s+/', ' ', preg_replace('/[^a-z0-9\s]/', ' ', $right) ?? $right) ?? $right;
 
-        return $left === $right || str_contains($left, $right) || str_contains($right, $left);
+        return $left === $right;
     }
 }

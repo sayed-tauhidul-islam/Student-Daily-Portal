@@ -100,7 +100,7 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-[0.18em] app-primary">Academic progress</p>
-                            <h2 class="mt-2 text-2xl font-black text-[color:var(--app-text)]">Performance snapshot</h2>
+                            <h2 class="mt-2 text-2xl font-black text-[color:var(--app-text)]">Student Performance</h2>
                         </div>
                         <a href="{{ route('student.progress-hub.index') }}" class="rounded-lg border border-[color:var(--app-border)] px-3 py-2 text-xs font-black text-[color:var(--app-text)]">Details</a>
                     </div>

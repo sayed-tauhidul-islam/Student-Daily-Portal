@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>TutorLink BD</title>
+    <title>Student Daily Portal</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('tb-favicon.svg') }}">
     <link rel="shortcut icon" href="{{ asset('tb-favicon.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('tb-favicon.svg') }}">
@@ -46,9 +46,9 @@
         <section class="hero-card w-full rounded-[2rem] p-6 sm:p-10 lg:p-14">
             <div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.34em] text-sky-600">TutorLink BD</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.34em] text-sky-600">Student Daily Portal</p>
                     <h1 class="mt-4 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                        Welcome to TutorLink BD
+                        Welcome to Student Daily Portal
                     </h1>
                     <p class="mt-5 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
                         A simple student-first platform for finding tutors, managing profiles, and keeping school information organized.
@@ -58,9 +58,9 @@
                         <a href="{{ route('login', ['portal' => 'student']) }}" class="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:bg-sky-700">
                             Student Panel
                         </a>
-                        <!-- <a href="{{ route('login', ['portal' => 'teacher-admin']) }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:bg-slate-800">
+                        <a href="{{ route('login', ['portal' => 'teacher-admin']) }}" class="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
                             Teacher Admin Panel
-                        </a> -->
+                        </a>
                         <a href="{{ route('login', ['portal' => 'teacher']) }}" class="inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-6 py-3.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50">
                             Teacher Panel
                         </a>
@@ -99,7 +99,7 @@
                     <div class="rounded-[1.75rem] border border-sky-100 bg-sky-50/70 p-6">
                         <p class="text-sm font-semibold text-sky-700">Project focus</p>
                         <p class="mt-2 text-sm leading-7 text-slate-600">
-                            TutorLink BD is built to keep tutor discovery, student profiles, and school tracking in one clean workflow.
+                            Student Daily Portal is built to keep tutor discovery, student profiles, and school tracking in one clean workflow.
                         </p>
                     </div>
                 </div>

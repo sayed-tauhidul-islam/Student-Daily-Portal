@@ -5,5 +5,5 @@
     <p>Message:</p>
     <blockquote style="background:#f3f4f6;padding:12px;border-radius:8px">{{ $requestModel->description }}</blockquote>
     <p>View the student's profile on the platform to respond and confirm.</p>
-    <p>Thanks,<br/>TutorLink BD</p>
+    <p>Thanks,<br/>Student Daily Portal</p>
 </div>

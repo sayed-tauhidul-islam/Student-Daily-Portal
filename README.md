@@ -1,6 +1,6 @@
-# TutorLink BD - Student Daily Portal
+# Student Daily Portal
 
-TutorLink BD is a role-based school operations portal for students, teachers, head teachers, and platform administrators. It is built with Laravel, MongoDB, Blade, Tailwind CSS, Alpine.js, and Vite.
+Student Daily Portal is a role-based school operations portal for students, teachers, head teachers, and platform administrators. It is built with Laravel, MongoDB, Blade, Tailwind CSS, Alpine.js, and Vite.
 
 The application is designed for school and college workflows in Bangladesh, with separate dashboards, authentication guards, navigation menus, and data access rules for each role.
 
@@ -23,7 +23,7 @@ The application is designed for school and college workflows in Bangladesh, with
 
 ## Overview
 
-TutorLink BD helps schools manage day-to-day academic and administrative work from one web application. Each portal is scoped to the logged-in user's role, so students, teachers, head teachers, and administrators only see the tools and records relevant to them.
+Student Daily Portal helps schools manage day-to-day academic and administrative work from one web application. Each portal is scoped to the logged-in user's role, so students, teachers, head teachers, and administrators only see the tools and records relevant to them.
 
 The system supports student profiles, teacher profiles, school-scoped rosters, attendance, notices, student progress, payments, complaints, leave applications, reading logs, messaging, login review, and admin-level school management.
 
@@ -201,7 +201,7 @@ php artisan db:seed
 Recommended local `.env` values:
 
 ```env
-APP_NAME="TutorLink BD"
+APP_NAME="Student Daily Portal"
 APP_ENV=local
 APP_KEY=
 APP_DEBUG=true
@@ -210,7 +210,7 @@ APP_URL=http://localhost:8000
 DB_CONNECTION=mongodb
 DB_HOST=127.0.0.1
 DB_PORT=27017
-DB_DATABASE=tutorlink_bd
+DB_DATABASE=student_daily_portal
 DB_USERNAME=
 DB_PASSWORD=
 

@@ -7,7 +7,7 @@
                         <span class="text-sm font-black tracking-[0.2em]">TB</span>
                     </div>
                     <div>
-                        <p class="text-sm font-bold text-[color:var(--app-text,#0f172a)]">TutorLink BD</p>
+                        <p class="text-sm font-bold text-[color:var(--app-text,#0f172a)]">Student Daily Portal</p>
                         <p class="text-sm text-[color:var(--app-muted,#64748b)]">Modern student portal for schools and tutors</p>
                     </div>
                 </div>

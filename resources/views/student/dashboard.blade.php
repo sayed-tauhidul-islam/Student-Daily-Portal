@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">TutorLink BD</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">Student Daily Portal</p>
                 <h2 class="mt-2 text-3xl font-black text-slate-900 sm:text-4xl">Student Dashboard</h2>
                 <p class="mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">
                     Complete your profile, search teachers, and manage tuition requests from one place.

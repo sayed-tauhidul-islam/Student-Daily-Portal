@@ -61,6 +61,32 @@ class MultiGuardSessionTest extends TestCase
         $this->assertAuthenticatedAs($superAdmin, 'admin');
     }
 
+    public function test_a_user_cannot_log_in_through_a_different_role_panel(): void
+    {
+        $student = User::factory()->create([
+            'role' => 'student',
+            'email' => 'student@example.com',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->post('/login', [
+            'portal' => 'teacher-admin',
+            'email' => $student->email,
+            'password' => 'password123',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest('student');
+        $this->assertGuest('teacher_admin');
+
+        $this->post('/login', [
+            'portal' => 'student',
+            'email' => $student->email,
+            'password' => 'password123',
+        ])->assertRedirect('/dashboard');
+
+        $this->assertAuthenticatedAs($student, 'student');
+    }
+
     public function test_head_teacher_created_teacher_can_only_enter_teacher_portal_dashboard(): void
     {
         $headTeacher = User::factory()->create([

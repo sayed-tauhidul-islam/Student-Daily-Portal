@@ -246,6 +246,14 @@
                 <div class="mt-3 rounded-2xl bg-slate-50 p-3 text-sm">
                     <p class="font-semibold text-slate-900">Parent Portal Link</p>
                     <a class="text-sky-700 underline break-all" href="{{ route('parent.portal', $parentAccess->access_code) }}" target="_blank">{{ route('parent.portal', $parentAccess->access_code) }}</a>
+                    @if($parentAccess->expires_at)
+                        <p class="mt-1 text-xs text-slate-500">Expires: {{ $parentAccess->expires_at->format('d M Y') }}</p>
+                    @endif
+                    <form method="POST" action="{{ route('student.progress-hub.parent-portal.revoke') }}" class="mt-2">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-xs font-semibold text-rose-600 underline">Revoke parent access</button>
+                    </form>
                 </div>
             @endif
         </section>

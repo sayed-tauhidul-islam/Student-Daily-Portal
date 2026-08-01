@@ -184,7 +184,8 @@ class TeacherAttendanceController extends Controller
     private function canManage(Attendance $attendance, string $institute): bool
     {
         return $institute !== ''
-            && $this->normalizeInstitute((string) ($attendance->institute ?? '')) === $this->normalizeInstitute($institute);
+            && $this->normalizeInstitute((string) ($attendance->institute ?? '')) === $this->normalizeInstitute($institute)
+            && ((Auth::user()?->role ?? '') === 'teacher_admin' || (string) $attendance->teacher_user_id === (string) Auth::id());
     }
 
     private function normalizeInstitute(string $value): string

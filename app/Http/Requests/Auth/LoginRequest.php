@@ -6,6 +6,7 @@ use App\Models\BlockedIdentity;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -20,11 +21,11 @@ class LoginRequest extends FormRequest
         'super-admin' => 'super-admin',
     ];
 
-    private const PORTAL_ROLE_PRIORITY = [
-        'student' => ['student', 'teacher', 'teacher_admin', 'admin', 'super_admin'],
-        'teacher' => ['teacher', 'teacher_admin', 'admin', 'super_admin', 'student'],
-        'teacher-admin' => ['teacher_admin', 'admin', 'super_admin', 'teacher', 'student'],
-        'super-admin' => ['admin', 'super_admin', 'teacher_admin', 'teacher', 'student'],
+    private const PORTAL_ROLES = [
+        'student' => 'student',
+        'teacher' => 'teacher',
+        'teacher-admin' => 'teacher_admin',
+        'super-admin' => 'super_admin',
     ];
 
     /**
@@ -62,61 +63,54 @@ class LoginRequest extends FormRequest
         $email = (string) $this->string('email');
         $password = (string) $this->string('password');
 
-        foreach ($this->rolePriorityForPortal($portal) as $role) {
-            $guard = $this->guardForRole($role);
+        $role = self::PORTAL_ROLES[$portal] ?? 'student';
+        $guard = $this->guardForRole($role);
 
-            if (! $guard) {
-                continue;
-            }
-
-            if (! Auth::guard($guard)->attempt([
-                'email' => $email,
-                'password' => $password,
-            ], $this->boolean('remember'))) {
-                continue;
-            }
-
+        if ($guard && Auth::guard($guard)->attempt([
+            'email' => $email,
+            'password' => $password,
+        ], $this->boolean('remember'))) {
             Auth::shouldUse($guard);
-
             $user = Auth::user();
+            $userRole = $user
+                ? $this->normalizeRole((string) ($user->getRawOriginal('role') ?? $user->role ?? 'student'))
+                : null;
 
-            if (! $user) {
-                Auth::guard($guard)->logout();
-                continue;
+            // A successful password check is not enough: each login box only
+            // accepts the role it represents.
+            if ($user && $userRole === $role) {
+                if ((string) ($user->status ?? '') === 'blocked') {
+                    Auth::guard($guard)->logout();
+
+                    throw ValidationException::withMessages([
+                        'email' => 'This account is blocked by your school authority.',
+                    ]);
+                }
+
+                $blockedIdentity = BlockedIdentity::query()
+                    ->where('email', Str::lower((string) ($user->email ?? '')))
+                    ->where('school', (string) ($user->school ?? ''))
+                    ->first();
+
+                if ($blockedIdentity) {
+                    Auth::guard($guard)->logout();
+
+                    throw ValidationException::withMessages([
+                        'email' => 'You are blocked from this school. Please contact the head authority.',
+                    ]);
+                }
+
+                $this->attributes->set('authenticated_guard', $guard);
+                $this->attributes->set('authenticated_role', $userRole);
+                RateLimiter::clear($this->throttleKey());
+
+                return;
             }
 
-            $userRole = $this->normalizeRole((string) ($user->getRawOriginal('role') ?? $user->role ?? 'student'));
-            if ($userRole !== $role) {
-                Auth::guard($guard)->logout();
-                continue;
-            }
-
-            if ((string) ($user->status ?? '') === 'blocked') {
-                Auth::guard($guard)->logout();
-
-                throw ValidationException::withMessages([
-                    'email' => 'This account is blocked by your school authority.',
-                ]);
-            }
-
-            $blockedIdentity = BlockedIdentity::query()
-                ->where('email', Str::lower((string) ($user->email ?? '')))
-                ->where('school', (string) ($user->school ?? ''))
-                ->first();
-
-            if ($blockedIdentity) {
-                Auth::guard($guard)->logout();
-
-                throw ValidationException::withMessages([
-                    'email' => 'You are blocked from this school. Please contact the head authority.',
-                ]);
-            }
-
-            $this->attributes->set('authenticated_guard', $guard);
-            $this->attributes->set('authenticated_role', $userRole);
-
-            return;
+            Auth::guard($guard)->logout();
         }
+
+        RateLimiter::hit($this->throttleKey());
 
         throw ValidationException::withMessages([
             'email' => trans('auth.failed'),
@@ -130,7 +124,18 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        return;
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            return;
+        }
+
+        $seconds = RateLimiter::availableIn($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'email' => trans('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => (int) ceil($seconds / 60),
+            ]),
+        ]);
     }
 
     /**
@@ -153,14 +158,6 @@ class LoginRequest extends FormRequest
         $portal = preg_replace('/-+/', '-', $portal) ?? $portal;
 
         return self::PORTAL_ALIASES[$portal] ?? self::PORTAL_ALIASES[str_replace('-', '', $portal)] ?? 'student';
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function rolePriorityForPortal(string $portal): array
-    {
-        return self::PORTAL_ROLE_PRIORITY[$portal] ?? self::PORTAL_ROLE_PRIORITY['student'];
     }
 
     private function guardForRole(string $role): ?string

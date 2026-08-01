@@ -7,7 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>TutorLink BD</title>
+        <title>Student Daily Portal</title>
 
         <link rel="icon" type="image/svg+xml" href="{{ asset('tb-favicon.svg') }}">
         <link rel="shortcut icon" href="{{ asset('tb-favicon.svg') }}">
@@ -27,7 +27,7 @@
                             <span class="text-sm font-black tracking-[0.2em]">TL</span>
                         </div>
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-sky-600">TutorLink BD</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-sky-600">Student Daily Portal</p>
                             <p class="text-sm font-medium text-slate-600">Student Daily Portal</p>
                         </div>
                     </a>
@@ -44,7 +44,7 @@
                             Clean login, registration, and profile management in one place.
                         </h1>
                         <p class="mt-4 text-base leading-7 text-slate-600">
-                            TutorLink BD is built for students who need fast onboarding, simple profile setup, and a calm dashboard experience.
+                            Student Daily Portal is built for students who need fast onboarding, simple profile setup, and a calm dashboard experience.
                         </p>
 
                         <div class="mt-8 grid gap-4">

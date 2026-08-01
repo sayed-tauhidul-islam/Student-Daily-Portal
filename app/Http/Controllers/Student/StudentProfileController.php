@@ -135,7 +135,7 @@ class StudentProfileController extends Controller
         $left = $this->normalize($left);
         $right = $this->normalize($right);
 
-        return $left !== '' && $right !== '' && ($left === $right || str_contains($left, $right) || str_contains($right, $left));
+        return $left !== '' && $right !== '' && $left === $right;
     }
 
     private function normalize(string $value): string

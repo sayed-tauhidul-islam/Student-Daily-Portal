@@ -75,6 +75,11 @@ class SchoolPortalController extends Controller
         if ($receiver && $role === 'teacher_admin' && filled($request->query('peer'))) {
             $peer = User::find($request->query('peer'));
             if ($peer) {
+                abort_unless(
+                    $this->schoolMatches($this->receiverSchool($receiver), $school)
+                    && $this->schoolMatches($this->receiverSchool($peer), $school),
+                    403
+                );
                 $pairIds = [(string) $receiver->getKey(), (string) $peer->getKey()];
                 $messages = Message::query()
                     ->whereIn('sender_id', $pairIds)
@@ -279,7 +284,7 @@ class SchoolPortalController extends Controller
             'document' => ['required', 'file', 'mimes:pdf,docx', 'max:5120'],
         ]);
 
-        $path = $request->file('document')->store('leave-documents', 'public');
+        $path = $request->file('document')->store('leave-documents', 'local');
 
         LeaveApplication::create([
             'school' => $this->currentSchool(),
@@ -308,6 +313,18 @@ class SchoolPortalController extends Controller
         $leave->save();
 
         return back()->with('success', 'Leave status updated.');
+    }
+
+    public function downloadLeaveDocument(LeaveApplication $leave)
+    {
+        $user = Auth::user();
+        $isOwner = (string) $leave->user_id === (string) Auth::id();
+        $isHeadTeacher = ($user?->role ?? '') === 'teacher_admin' && $this->sameSchool((string) $leave->school);
+
+        abort_unless($isOwner || $isHeadTeacher, 403);
+        abort_unless(! empty($leave->document_path) && Storage::disk('local')->exists($leave->document_path), 404);
+
+        return Storage::disk('local')->download($leave->document_path);
     }
 
     public function payments(): View
@@ -512,6 +529,9 @@ class SchoolPortalController extends Controller
     public function unblockLogin(LoginReview $review): RedirectResponse
     {
         abort_unless(in_array(Auth::user()?->role, ['admin', 'teacher_admin'], true), 403);
+        if (Auth::user()?->role === 'teacher_admin') {
+            abort_unless($this->sameSchool($review->school), 403);
+        }
         $review->fill(['status' => 'allowed', 'blocked_at' => null, 'blocked_by' => null]);
         $review->save();
         $user = User::find($review->user_id);
@@ -658,7 +678,7 @@ class SchoolPortalController extends Controller
         $left = $this->normalize($left);
         $right = $this->normalize($right);
 
-        return $left !== '' && $right !== '' && ($left === $right || str_contains($left, $right) || str_contains($right, $left));
+        return $left !== '' && $right !== '' && $left === $right;
     }
 
     private function normalize(string $value): string

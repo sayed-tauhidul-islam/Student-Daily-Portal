@@ -23,7 +23,7 @@
             <a href="{{ route('dashboard', ['portal' => $dashboardPortal]) }}" class="flex items-center gap-3">
                 <div class="brand-badge">TL</div>
                 <div>
-                    <p class="text-lg font-black text-[color:var(--app-text)]">TutorLink BD</p>
+                    <p class="text-lg font-black text-[color:var(--app-text)]">Student Daily Portal</p>
                     <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--app-muted)]">{{ $portalLabel }}</p>
                 </div>
             </a>

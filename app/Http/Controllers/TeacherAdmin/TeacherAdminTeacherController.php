@@ -11,6 +11,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TeacherAdminTeacherController extends Controller
@@ -154,7 +155,7 @@ class TeacherAdminTeacherController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique(User::class)->ignore($user?->getKey())],
             'password' => ['nullable', 'string', 'min:6'],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
@@ -272,7 +273,7 @@ class TeacherAdminTeacherController extends Controller
             return false;
         }
 
-        return $value === $school || str_contains($value, $school) || str_contains($school, $value);
+        return $value === $school;
     }
 
     private function normalize(string $value): string

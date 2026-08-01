@@ -2,7 +2,7 @@
     <div class="mb-8">
         <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-600">Choose new password</p>
         <h2 class="mt-2 text-3xl font-black text-slate-950">Reset your password</h2>
-        <p class="mt-3 text-sm leading-6 text-slate-600">Set a new password for your TutorLink BD account.</p>
+        <p class="mt-3 text-sm leading-6 text-slate-600">Set a new password for your Student Daily Portal account.</p>
     </div>
 
     <form method="POST" action="{{ route('password.store') }}" class="space-y-5">

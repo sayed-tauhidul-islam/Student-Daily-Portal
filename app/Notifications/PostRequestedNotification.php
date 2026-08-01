@@ -42,12 +42,12 @@ class PostRequestedNotification extends Notification implements ShouldQueue
     public function toMail($notifiable)
     {
         $mail = (new MailMessage)
-            ->subject('New request for your post on TutorLink BD')
+            ->subject('New request for your post on Student Daily Portal')
             ->greeting('Hello,')
             ->line($this->studentRequest->student_name . ' has requested your post.')
             ->line($this->studentRequest->description ?? '')
             ->action('View request', url('/'))
-            ->line('Thank you for using TutorLink BD.');
+            ->line('Thank you for using Student Daily Portal.');
 
         return $mail;
     }

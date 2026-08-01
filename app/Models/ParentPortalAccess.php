@@ -17,10 +17,11 @@ class ParentPortalAccess extends Model
         'relation',
         'contact',
         'is_active',
+        'expires_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'expires_at' => 'datetime',
     ];
 }
-
